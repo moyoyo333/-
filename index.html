@@ -702,7 +702,23 @@
 </div>
 
 <script>
+
+<script>
+document.body.insertAdjacentHTML(
+  "beforeend",
+  "<h2 style='color:red'>① JavaScript開始</h2>"
+);
+
 alert("JavaScript起動！");
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  "<h2 style='color:blue'>② alert後</h2>"
+);
+
+/* =========================
+   Supabase設定
+========================= */
 /* =========================
    Supabase設定
 ========================= */
@@ -2027,14 +2043,6 @@ function backToEditor() {
 loadPeople();
 
 </script>
-<p style="color:red; font-size:30px;">
-  HTML TEST
-</p>
-
-<script>
-  alert("SCRIPT TEST");
-</script>
-
 
 </body>
 </html>
