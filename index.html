@@ -4390,25 +4390,37 @@ document
    ウィンドウサイズ変更
 ========================================================= */
 
+/* =========================================================
+   ウィンドウサイズ変更
+========================================================= */
+
 window.addEventListener(
   "resize",
   function() {
 
+    const modal =
+      document.getElementById(
+        "cropModal"
+      );
+
+
     if (
-      document
-        .getElementById(
-          "cropModal"
-        )
-        .style.display !==
-      "none"
+      modal.style.display ===
+      "flex"
     ) {
 
-      /*
-        モーダル表示中は、
-        画像が画面外に飛ばないよう補正。
-      */
+      if (
+        cropState.sourceImage
+      ) {
 
-      constrainCropSquare();
+        /*
+          画面サイズ変更後も
+          白枠内が画像から外れないように更新
+        */
+
+        updateCropDisplay();
+
+      }
 
     }
 
