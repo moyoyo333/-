@@ -1209,17 +1209,21 @@ async function loadPeople() {
 
                   return {
 
-                    id:
-                      image.id,
+  id:
+    image.id,
 
-                    path:
-                      image.image_path,
+  path:
+    image.image_path,
 
-                    url:
-                      data.publicUrl
+  // Supabaseに保存されている「初回切り抜き画像」
+  originalUrl:
+    data.publicUrl,
 
-                  };
+  // 現在サイト上で表示する画像
+  url:
+    data.publicUrl
 
+};
                 }
               );
 
@@ -2357,9 +2361,7 @@ async function openCropForNewImage(
 }
 
 
-/* =========================================================
-   既存画像の切り抜き
-========================================================= */
+
 
 /* =========================================================
    既存画像の切り抜き
@@ -2373,27 +2375,70 @@ async function openCropForExistingImage(
   try {
 
     /*
-      キャッシュを避けて
-      現在保存されている画像を取得
+      常に「初回切り抜き後の画像」を
+      切り抜き元として使用する。
+
+      image.url は画面表示用なので、
+      再切り抜きには使わない。
     */
 
     const imageUrl =
-      image.url +
-      (
-        image.url.includes("?")
-          ? "&"
-          : "?"
-      ) +
-      "crop=" +
-      Date.now();
+      image.originalUrl ||
+      image.url;
 
+
+    /*
+      URLから画像を読み込む
+    */
+
+    const img =
+      await new Promise(
+        (
+          resolve,
+          reject
+        ) => {
+
+          const tempImg =
+            new Image();
+
+
+          tempImg.onload =
+            () => {
+
+              resolve(
+                tempImg
+              );
+
+            };
+
+
+          tempImg.onerror =
+            () => {
+
+              reject(
+                new Error(
+                  "画像を読み込めませんでした"
+                )
+              );
+
+            };
+
+
+          tempImg.src =
+            imageUrl;
+
+        }
+      );
+
+
+    /*
+      Data URLにも変換する
+      → cropImageの表示に使用
+    */
 
     const response =
       await fetch(
-        imageUrl,
-        {
-          cache: "no-store"
-        }
+        imageUrl
       );
 
 
@@ -2416,14 +2461,8 @@ async function openCropForExistingImage(
       );
 
 
-    const img =
-      await loadImageFromDataURL(
-        dataUrl
-      );
-
-
     /*
-      切り抜き状態を作成
+      切り抜き状態
     */
 
     cropState = {
@@ -2498,6 +2537,7 @@ async function openCropForExistingImage(
   catch(error) {
 
     console.error(
+      "既存画像読み込みエラー:",
       error
     );
 
@@ -2510,7 +2550,6 @@ async function openCropForExistingImage(
   }
 
 }
-
 
 /* =========================================================
    切り抜き画面表示
@@ -3665,110 +3704,64 @@ async function saveCrop() {
     =========================
     */
 
-    else if (
-      cropState.mode ===
-      "existing"
-    ) {
+ 　　/* =====================================================
+   既存画像の再切り抜き
+   ===================================================== */
 
-      const oldImage =
-        cropState.image;
+else if (
+  cropState.mode ===
+  "existing"
+) {
 
-
-      const newFileName =
-        `${cropState.person.id}/${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2)}.jpg`;
+  const image =
+    cropState.image;
 
 
-      const {
-        error:
-          uploadError
-      } =
-      await supabaseClient
-        .storage
-        .from("images")
-        .upload(
-          newFileName,
-          blob,
-          {
+  /*
+    ==========================================
+    Supabaseには保存しない
+    ==========================================
 
-            contentType:
-              "image/jpeg",
+    今回作ったblobをData URLにして、
+    サイト上の表示だけ変更する。
+  */
 
-            upsert:
-              false
-
-          }
-        );
+  const displayDataUrl =
+    await fileToDataURL(
+      blob
+    );
 
 
-      if (uploadError) {
+  /*
+    現在表示する画像だけ変更。
 
-        throw uploadError;
+    originalUrlは絶対に変更しない。
+    */
 
-      }
-
-
-      const {
-        error:
-          updateError
-      } =
-      await supabaseClient
-        .from("person_images")
-        .update({
-
-          image_path:
-            newFileName
-
-        })
-        .eq(
-          "id",
-          oldImage.id
-        );
+  image.url =
+    displayDataUrl;
 
 
-      if (updateError) {
+  /*
+    image.originalUrl はそのまま。
 
-        await supabaseClient
-          .storage
-          .from("images")
-          .remove([
-            newFileName
-          ]);
-
-        throw updateError;
-
-      }
+    これによって次回「切り抜き」を押すと、
+    必ず初回切り抜き画像から再開する。
+  */
 
 
-      const {
-        error:
-          oldDeleteError
-      } =
-      await supabaseClient
-        .storage
-        .from("images")
-        .remove([
-          oldImage.path
-        ]);
+  /*
+    画面を更新
+  */
 
+  renderPeople();
 
-      if (oldDeleteError) {
-
-        console.warn(
-          "古い画像削除失敗",
-          oldDeleteError
-        );
-
-      }
-
-    }
-
+}
 
     closeCropModal();
 
 
-    await loadPeople();
+    renderPeople();
 
 
   }
