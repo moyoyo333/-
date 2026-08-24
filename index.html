@@ -702,37 +702,7 @@
 </div>
 
 
-<script>
-window.addEventListener("error", function(e) {
-  document.body.insertAdjacentHTML(
-    "beforeend",
-    "<pre style='color:red;white-space:pre-wrap'>" +
-    "ERROR: " + e.message + "\n" +
-    "FILE: " + e.filename + "\n" +
-    "LINE: " + e.lineno +
-    "</pre>"
-  );
-});
 
-window.addEventListener("unhandledrejection", function(e) {
-  document.body.insertAdjacentHTML(
-    "beforeend",
-    "<pre style='color:red;white-space:pre-wrap'>" +
-    "PROMISE ERROR: " + e.reason +
-    "</pre>"
-  );
-});
-</script>
-
-<script>
-console.log("①開始");
-
-function test() {
-  console.log("②関数OK");
-}
-
-console.log("③終了");
-</script>
 <script>
 /* =========================
    Supabase設定
