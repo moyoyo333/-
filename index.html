@@ -3677,7 +3677,6 @@ async function uploadCroppedImage(
 
 }
 
-
 /* =========================================================
    切り抜き保存
 ========================================================= */
@@ -3691,6 +3690,7 @@ async function saveCrop() {
 
 
   if (
+    !saveButton ||
     saveButton.disabled
   ) {
 
@@ -3701,7 +3701,6 @@ async function saveCrop() {
 
   saveButton.disabled =
     true;
-
 
   saveButton.textContent =
     "保存中...";
@@ -3722,10 +3721,8 @@ async function saveCrop() {
     ===================================================== */
 
     if (
-      cropState.mode ===
-        "pending" ||
-      cropState.mode ===
-        "new"
+      cropState.mode === "pending" ||
+      cropState.mode === "new"
     ) {
 
       const person =
@@ -3741,12 +3738,20 @@ async function saveCrop() {
       }
 
 
+      /*
+        ① 新しい切り抜き画像をStorageへ保存
+      */
+
       uploadedPath =
         await uploadCroppedImage(
           person.id,
           blob
         );
 
+
+      /*
+        ② DBへ登録
+      */
 
       const {
         error: dbError
@@ -3764,12 +3769,12 @@ async function saveCrop() {
         });
 
 
-      if (dbError) {
+      /*
+        DB登録失敗
+        → 新しくアップロードした画像を削除
+      */
 
-        /*
-          DB保存に失敗したら
-          アップロードした画像を削除。
-        */
+      if (dbError) {
 
         await supabaseClient
           .storage
@@ -3789,7 +3794,7 @@ async function saveCrop() {
 
 
       /*
-        保留リストから削除
+        ③ 保留画像を削除
       */
 
       if (
@@ -3820,171 +3825,241 @@ async function saveCrop() {
     ===================================================== */
 
     else if (
-  cropState.mode === "existing"
-) {
+      cropState.mode === "existing"
+    ) {
 
-  const person =
-    cropState.person;
+      const person =
+        cropState.person;
 
-  const oldImage =
-    cropState.image;
 
-  if (
-    !person ||
-    !oldImage
-  ) {
-    throw new Error(
-      "既存画像の情報がありません。"
-    );
-  }
+      const oldImage =
+        cropState.image;
 
-  /*
-    ==========================================
-    1. 新しい画像をStorageへ保存
-    ==========================================
-  */
 
-  const newPath =
-    `${person.id}/` +
-    `${Date.now()}-` +
-    `${Math.random()
-      .toString(36)
-      .substring(2)}.jpg`;
+      if (
+        !person ||
+        !oldImage
+      ) {
 
-  const {
-    error: uploadError
-  } =
-  await supabaseClient
-    .storage
-    .from("images")
-    .upload(
-      newPath,
-      blob,
-      {
-        contentType: "image/jpeg",
-        upsert: false
+        throw new Error(
+          "既存画像の情報がありません。"
+        );
+
       }
-    );
 
-  if (uploadError) {
-    throw uploadError;
-  }
 
-  /*
-    ==========================================
-    2. DBを新画像へ変更
-    ==========================================
-  */
+      /*
+        ==========================================
+        ① 新しい画像をStorageへ保存
+        ==========================================
+      */
 
-  const {
-    error: updateError
-  } =
-  await supabaseClient
-    .from("person_images")
-    .update({
-      image_path: newPath
-    })
-    .eq(
-      "id",
-      oldImage.id
-    );
+      const newPath =
+        `${person.id}/` +
+        `${Date.now()}-` +
+        `${Math.random()
+          .toString(36)
+          .substring(2)}.jpg`;
 
-  /*
-    DB更新失敗
-    → 新画像だけ削除
-    */
 
-  if (updateError) {
+      const {
+        error: uploadError
+      } =
+      await supabaseClient
+        .storage
+        .from("images")
+        .upload(
+          newPath,
+          blob,
+          {
 
-    await supabaseClient
-      .storage
-      .from("images")
-      .remove([
-        newPath
-      ]);
+            contentType:
+              "image/jpeg",
 
-    throw updateError;
-  }
+            upsert:
+              false
 
-  /*
-    ==========================================
-    3. DB更新成功
-    ==========================================
-    
-    ここまで来たら、
-    新画像は絶対に削除しない。
-    */
+          }
+        );
 
-  /*
-    ==========================================
-    4. 古い画像を削除
-    ==========================================
-  */
 
-  if (
-    oldImage.path &&
-    oldImage.path !== newPath
-  ) {
+      if (uploadError) {
 
-    const {
-      error: oldDeleteError
-    } =
-    await supabaseClient
-      .storage
-      .from("images")
-      .remove([
-        oldImage.path
-      ]);
+        throw uploadError;
 
-    /*
-      古い画像の削除失敗は
-      新画像の保存失敗にはしない。
-    */
+      }
 
-    if (oldDeleteError) {
 
-      console.warn(
-        "古い画像の削除に失敗しました:",
-        oldDeleteError
+      uploadedPath =
+        newPath;
+
+
+      /*
+        ==========================================
+        ② DBの参照先を新画像へ変更
+        ==========================================
+      */
+
+      const {
+        error: updateError
+      } =
+      await supabaseClient
+        .from("person_images")
+        .update({
+
+          image_path:
+            newPath
+
+        })
+        .eq(
+          "id",
+          oldImage.id
+        );
+
+
+      /*
+        DB更新失敗
+        → 新画像だけ削除
+      */
+
+      if (updateError) {
+
+        await supabaseClient
+          .storage
+          .from("images")
+          .remove([
+            newPath
+          ]);
+
+
+        uploadedPath =
+          null;
+
+
+        throw updateError;
+
+      }
+
+
+      /*
+        ==========================================
+        ③ DB更新成功
+        ==========================================
+
+        ここまで来たら新画像は
+        DBから参照されています。
+
+        先にDBを更新してから、
+        古い画像を削除します。
+      */
+
+
+      /*
+        ==========================================
+        ④ 古い画像を削除
+        ==========================================
+      */
+
+      if (
+        oldImage.path &&
+        oldImage.path !== newPath
+      ) {
+
+        const {
+          error: oldDeleteError
+        } =
+        await supabaseClient
+          .storage
+          .from("images")
+          .remove([
+            oldImage.path
+          ]);
+
+
+        /*
+          古い画像の削除に失敗しても、
+          新しい画像への変更自体は成功。
+        */
+
+        if (oldDeleteError) {
+
+          console.warn(
+            "古い画像の削除に失敗しました:",
+            oldDeleteError
+          );
+
+        }
+
+      }
+
+    }
+
+    else {
+
+      throw new Error(
+        "切り抜きモードが不正です。"
       );
 
     }
-  }
 
-  /*
-    ==========================================
-    5. DBから最新情報を読み直す
-    ==========================================
-  */
 
-  closeCropModal();
+    /*
+      ==========================================
+      保存処理完了
+      ==========================================
+    */
 
-  try {
+    closeCropModal();
+
+
+    /*
+      Supabaseから最新状態を再取得
+    */
 
     await loadPeople();
 
-  }
-
-  catch(loadError) {
-
-    /*
-      ここが重要。
-
-      DB更新はすでに成功しているので、
-      loadPeople()が失敗しても
-      新画像は削除しない。
-    */
-
-    console.error(
-      "最新データの再読み込みに失敗しました:",
-      loadError
-    );
 
     alert(
-      "画像の保存は完了しましたが、" +
-      "画面の更新に失敗しました。\n" +
-      "ページを再読み込みしてください。"
+      "切り抜き画像を保存しました。"
     );
+
+  }
+
+
+  catch(error) {
+
+    console.error(
+      "切り抜き保存エラー:",
+      error
+    );
+
+
+    /*
+      注意：
+      DB更新成功後にloadPeople()だけが失敗した場合、
+      uploadedPathは削除しない。
+
+      そのため、
+      「DBは新画像を指しているのに
+       Storageから新画像を消してしまう」
+      という事故を防ぐ。
+    */
+
+    alert(
+      "画像の保存に失敗しました。\n\n" +
+      error.message
+    );
+
+  }
+
+
+  finally {
+
+    saveButton.disabled =
+      false;
+
+    saveButton.textContent =
+      "✂️ この範囲で保存";
 
   }
 
