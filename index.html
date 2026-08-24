@@ -376,18 +376,6 @@ async function compressImage(file) {
 
 
 let people = [];
-const saved =
-  localStorage.getItem(
-    "people"
-  );
-
-if (saved) {
-
-  people =
-    JSON.parse(saved);
-
-}
-
 
 /*
 people のデータ例
@@ -405,6 +393,29 @@ people のデータ例
 */
 
 
+async function loadPeople() {
+
+  const { data, error } =
+    await supabase
+      .from("people")
+      .select("*");
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+
+  }
+
+  people = data.map(person => ({
+    ...person,
+    images: []
+  }));
+
+  renderPeople();
+
+}
 
 
 async function addPerson() {
@@ -433,30 +444,6 @@ async function addPerson() {
 
 loadPeople();
 
-  
-  async function loadPeople() {
-
-  const { data, error } =
-    await supabase
-      .from("people")
-      .select("*");
-
-  if(error){
-
-    console.error(error);
-
-    return;
-
-  }
-
-  people = data.map(
-    person => ({
-      ...person,
-      images:[]
-    })
-  );
-
-  renderPeople();
 
 }
 
@@ -464,7 +451,7 @@ loadPeople();
 
   nameInput.value = "";
 
-saveData();
+
 
 renderPeople();
 
@@ -536,7 +523,7 @@ function renderPeople() {
   1
 );
 
-saveData();
+
 
 renderPeople();
 
@@ -603,7 +590,6 @@ renderPeople();
     compressed
   );
 
-  saveData();
 
   renderPeople();
 
@@ -679,7 +665,7 @@ renderPeople();
               1
             );
 
-saveData();
+
             renderPeople();
 
           };
@@ -1174,16 +1160,7 @@ function backToEditor() {
 
 }
 
-function saveData() {
 
-  localStorage.setItem(
-    "people",
-    JSON.stringify(
-      people
-    )
-  );
-
-}
 loadPeople();
 
 
