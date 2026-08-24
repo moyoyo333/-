@@ -458,25 +458,18 @@ input[type="file"] {
     rgba(0,0,0,.1);
 }
 
-
 /* =========================================================
    切り抜きモーダル
 ========================================================= */
 
 #cropModal {
   display: none;
-
   position: fixed;
-
   inset: 0;
-
-  background:
-    rgba(0,0,0,.82);
-
+  background: rgba(0,0,0,.82);
   z-index: 10000;
 
   justify-content: center;
-
   align-items: center;
 
   padding: 10px;
@@ -484,15 +477,11 @@ input[type="file"] {
 
 .crop-dialog {
   width: min(95vw, 700px);
-
   max-height: 96vh;
-
   overflow-y: auto;
 
   background: white;
-
   border-radius: 20px;
-
   padding: 20px;
 
   box-shadow:
@@ -508,30 +497,22 @@ input[type="file"] {
   position: relative;
 
   width: 100%;
-
   height: min(65vh, 600px);
 
   overflow: hidden;
 
   background: #222;
 
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
+  border-radius: 12px;
 
   touch-action: none;
 
-  border-radius: 12px;
+  user-select: none;
 }
 
-/*
-  重要：
-  imgをmax-width/max-heightだけで変形させるのではなく、
-  JavaScript側でサイズを設定する。
-  これによりズーム時の黒画面問題を防ぐ。
-*/
+/* =========================
+   動かす画像
+========================= */
 
 #cropImage {
   position: absolute;
@@ -541,37 +522,55 @@ input[type="file"] {
   max-width: none;
   max-height: none;
 
-  width: auto;
-  height: auto;
+  user-select: none;
+
+  -webkit-user-drag: none;
+
+  cursor: grab;
+
+  touch-action: none;
+
+  z-index: 1;
+}
+
+#cropImage.dragging {
+  cursor: grabbing;
+}
+
+
+/* =========================
+   固定する切り抜き枠
+========================= */
+
+#cropImage {
+  position: absolute;
+
+  display: block;
+
+  max-width: none;
+  max-height: none;
 
   user-select: none;
 
   -webkit-user-drag: none;
 
-  transform-origin: center center;
-
-  pointer-events: none;
-}
-
-.crop-square {
-  position: absolute;
-
-  border: 3px solid white;
-
-  box-shadow:
-    0 0 0 9999px
-    rgba(0,0,0,.55);
-
-  cursor: move;
+  cursor: grab;
 
   touch-action: none;
 
-  z-index: 5;
+  z-index: 1;
 }
+
+#cropImage.dragging {
+  cursor: grabbing;
+}
+
+/* =========================
+   操作
+========================= */
 
 .crop-controls {
   margin-top: 15px;
-
   text-align: center;
 }
 
@@ -581,7 +580,6 @@ input[type="file"] {
 
 .crop-buttons {
   text-align: center;
-
   margin-top: 10px;
 }
 
@@ -589,6 +587,26 @@ input[type="file"] {
   background: #777;
 }
 
+
+/* =========================================================
+   スマホ
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .crop-dialog {
+    padding: 15px;
+  }
+
+  .crop-area {
+    height: 55vh;
+  }
+
+  .crop-controls input[type="range"] {
+    width: 95%;
+  }
+
+}
 
 /* =========================================================
    エラー
@@ -864,7 +882,7 @@ input[type="file"] {
     </h2>
 
     <p>
-      白い四角をドラッグして、表示したい部分を選択してください。
+      画像をドラッグして、白い枠の中に表示したい部分を合わせてください。
     </p>
 
 
@@ -2544,6 +2562,10 @@ function showCropModal() {
    切り抜きエリア初期化
 ========================================================= */
 
+/* =========================================================
+   切り抜きエリア初期化
+========================================================= */
+
 function setupCropArea() {
 
   const area =
@@ -2565,7 +2587,14 @@ function setupCropArea() {
 
 
   /*
-    画像を画面中央に表示
+    ========================================
+    白枠サイズ
+    ========================================
+
+    元画像を最初に画面へ収めた時の
+    短辺に近いサイズ。
+
+    ただし画面サイズを超えない。
   */
 
   cropState.baseScale =
@@ -2575,55 +2604,69 @@ function setupCropArea() {
     );
 
 
-  /*
-    初期ズーム
-  */
-
-  cropState.zoom = 1;
-
-
-  const imageWidth =
+  const fittedWidth =
     naturalWidth *
     cropState.baseScale;
 
-  const imageHeight =
+  const fittedHeight =
     naturalHeight *
     cropState.baseScale;
 
 
-  cropState.originalDisplayWidth =
-    imageWidth;
-
-  cropState.originalDisplayHeight =
-    imageHeight;
-
-
   /*
-    画像を完全に中央へ
-  */
+    白枠を大きくする
 
-  cropState.imageLeft =
-    (areaWidth - imageWidth) / 2;
-
-  cropState.imageTop =
-    (areaHeight - imageHeight) / 2;
-
-
-  /*
-    白い枠
-
-    元画像の短い辺の90%
+    元画像の短辺の95%
   */
 
   cropState.squareSize =
     Math.min(
-      imageWidth,
-      imageHeight
-    ) * 0.9;
+      fittedWidth,
+      fittedHeight
+    ) * 0.95;
 
 
   /*
-    白い枠も中央
+    最低限、
+    画面に余白を残す
+  */
+
+  cropState.squareSize =
+    Math.min(
+      cropState.squareSize,
+      areaWidth * 0.95,
+      areaHeight * 0.95
+    );
+
+
+  /*
+    ========================================
+    初期ズーム
+    ========================================
+
+    白枠が必ず画像の中に収まるように
+    最低倍率を決定
+  */
+
+  const minScale =
+    Math.max(
+      cropState.squareSize / naturalWidth,
+      cropState.squareSize / naturalHeight
+    );
+
+
+  cropState.baseScale =
+    minScale;
+
+
+  cropState.zoom =
+    1;
+
+
+  /*
+    ========================================
+    白枠を完全に中央固定
+    ========================================
   */
 
   cropState.squareLeft =
@@ -2635,13 +2678,43 @@ function setupCropArea() {
       cropState.squareSize) / 2;
 
 
-  const zoomRange =
-    document.getElementById(
-      "zoomRange"
-    );
+  /*
+    ========================================
+    画像を白枠の中央に配置
+    ========================================
+  */
 
-  zoomRange.value =
-    cropState.zoom;
+  const imageWidth =
+    naturalWidth *
+    cropState.baseScale;
+
+  const imageHeight =
+    naturalHeight *
+    cropState.baseScale;
+
+
+  cropState.imageLeft =
+    cropState.squareLeft +
+    cropState.squareSize / 2 -
+    imageWidth / 2;
+
+
+  cropState.imageTop =
+    cropState.squareTop +
+    cropState.squareSize / 2 -
+    imageHeight / 2;
+
+
+  /*
+    表示
+  */
+
+  document
+    .getElementById(
+      "zoomRange"
+    )
+    .value =
+    1;
 
 
   document
@@ -2655,6 +2728,7 @@ function setupCropArea() {
   updateCropDisplay();
 
 }
+
 
 /* =========================================================
    切り抜き表示更新
@@ -2672,18 +2746,10 @@ function updateCropDisplay() {
       "cropSquare"
     );
 
-  const area =
-    document.getElementById(
-      "cropArea"
-    );
 
-
-  const areaWidth =
-    area.clientWidth;
-
-  const areaHeight =
-    area.clientHeight;
-
+  /*
+    現在の画像サイズ
+  */
 
   const imageWidth =
     cropState.sourceImage.naturalWidth *
@@ -2698,15 +2764,58 @@ function updateCropDisplay() {
 
 
   /*
-    基本は画像を中央に配置
+    ========================================
+    画像の移動範囲制限
+
+    白枠の中が絶対に空白にならないようにする
+    ========================================
   */
 
+  const minImageLeft =
+    cropState.squareLeft +
+    cropState.squareSize -
+    imageWidth;
+
+
+  const maxImageLeft =
+    cropState.squareLeft;
+
+
+  const minImageTop =
+    cropState.squareTop +
+    cropState.squareSize -
+    imageHeight;
+
+
+  const maxImageTop =
+    cropState.squareTop;
+
+
   cropState.imageLeft =
-    (areaWidth - imageWidth) / 2;
+    Math.max(
+      minImageLeft,
+      Math.min(
+        maxImageLeft,
+        cropState.imageLeft
+      )
+    );
+
 
   cropState.imageTop =
-    (areaHeight - imageHeight) / 2;
+    Math.max(
+      minImageTop,
+      Math.min(
+        maxImageTop,
+        cropState.imageTop
+      )
+    );
 
+
+  /*
+    ========================================
+    画像表示
+    ========================================
+  */
 
   image.style.width =
     imageWidth + "px";
@@ -2721,6 +2830,12 @@ function updateCropDisplay() {
     cropState.imageTop + "px";
 
 
+  /*
+    ========================================
+    白枠表示
+    ========================================
+  */
+
   square.style.width =
     cropState.squareSize + "px";
 
@@ -2733,149 +2848,108 @@ function updateCropDisplay() {
   square.style.top =
     cropState.squareTop + "px";
 
-
-  /*
-    白枠の中から
-    画像がはみ出ないように補正
-  */
-
-  constrainCropSquare();
-
 }
 
-/* =========================================================
-   切り抜き四角の範囲補正
-========================================================= */
-
-function constrainCropSquare() {
-
-  const image =
-    document.getElementById(
-      "cropImage"
-    );
-
-
-  const square =
-    document.getElementById(
-      "cropSquare"
-    );
-
-
-  const imageWidth =
-    image.offsetWidth;
-
-  const imageHeight =
-    image.offsetHeight;
-
-
-  /*
-    白枠より画像が小さくならないようにする
-  */
-
-  const requiredWidth =
-    cropState.squareSize;
-
-  const requiredHeight =
-    cropState.squareSize;
-
-
-  /*
-    白枠の移動可能範囲
-  */
-
-  const minLeft =
-    cropState.imageLeft;
-
-  const maxLeft =
-    cropState.imageLeft +
-    imageWidth -
-    cropState.squareSize;
-
-
-  const minTop =
-    cropState.imageTop;
-
-  const maxTop =
-    cropState.imageTop +
-    imageHeight -
-    cropState.squareSize;
-
-
-  cropState.squareLeft =
-    Math.max(
-      minLeft,
-      Math.min(
-        maxLeft,
-        cropState.squareLeft
-      )
-    );
-
-
-  cropState.squareTop =
-    Math.max(
-      minTop,
-      Math.min(
-        maxTop,
-        cropState.squareTop
-      )
-    );
-
-
-  square.style.left =
-    cropState.squareLeft + "px";
-
-
-  square.style.top =
-    cropState.squareTop + "px";
-
-}
 
 /* =========================================================
-   切り抜き四角ドラッグ
+   画像ドラッグ
 ========================================================= */
 
-const cropSquare =
+const cropArea =
   document.getElementById(
-    "cropSquare"
+    "cropArea"
   );
 
 
-cropSquare.addEventListener(
+const cropImageElement =
+  document.getElementById(
+    "cropImage"
+  );
+
+
+let imageDragging =
+  false;
+
+
+let dragStartX =
+  0;
+
+
+let dragStartY =
+  0;
+
+
+let dragStartImageLeft =
+  0;
+
+
+let dragStartImageTop =
+  0;
+
+
+/* =========================
+   ドラッグ開始
+========================= */
+
+cropArea.addEventListener(
   "pointerdown",
   function(e) {
 
-    e.preventDefault();
+    if (
+      !cropState.sourceImage
+    ) {
 
-    cropState.dragging =
+      return;
+
+    }
+
+
+    imageDragging =
       true;
 
-    cropState.startX =
+
+    dragStartX =
       e.clientX;
 
-    cropState.startY =
+
+    dragStartY =
       e.clientY;
 
-    cropState.startSquareLeft =
-      cropState.squareLeft;
 
-    cropState.startSquareTop =
-      cropState.squareTop;
+    dragStartImageLeft =
+      cropState.imageLeft;
 
 
-    cropSquare.setPointerCapture(
+    dragStartImageTop =
+      cropState.imageTop;
+
+
+    cropArea.setPointerCapture(
       e.pointerId
     );
+
+
+    cropImageElement.classList.add(
+      "dragging"
+    );
+
+
+    e.preventDefault();
 
   }
 );
 
 
-cropSquare.addEventListener(
+/* =========================
+   ドラッグ中
+========================= */
+
+cropArea.addEventListener(
   "pointermove",
   function(e) {
 
     if (
-      !cropState.dragging
+      !imageDragging
     ) {
 
       return;
@@ -2885,49 +2959,61 @@ cropSquare.addEventListener(
 
     const dx =
       e.clientX -
-      cropState.startX;
+      dragStartX;
 
 
     const dy =
       e.clientY -
-      cropState.startY;
+      dragStartY;
 
 
-    cropState.squareLeft =
-      cropState.startSquareLeft +
+    cropState.imageLeft =
+      dragStartImageLeft +
       dx;
 
 
-    cropState.squareTop =
-      cropState.startSquareTop +
+    cropState.imageTop =
+      dragStartImageTop +
       dy;
 
 
-    constrainCropSquare();
+    /*
+      updateCropDisplay内で
+      移動可能範囲を制限
+    */
+
+    updateCropDisplay();
 
   }
 );
 
 
-cropSquare.addEventListener(
+/* =========================
+   ドラッグ終了
+========================= */
+
+function stopImageDragging() {
+
+  imageDragging =
+    false;
+
+
+  cropImageElement.classList.remove(
+    "dragging"
+  );
+
+}
+
+
+cropArea.addEventListener(
   "pointerup",
-  function() {
-
-    cropState.dragging =
-      false;
-
-  }
+  stopImageDragging
 );
 
 
-cropSquare.addEventListener(
+cropArea.addEventListener(
   "pointercancel",
-  function() {
-
-    cropState.dragging =
-      false;
-
-  }
+  stopImageDragging
 );
 
 
@@ -2946,6 +3032,7 @@ document
       const oldZoom =
         cropState.zoom;
 
+
       const newZoom =
         parseFloat(
           this.value
@@ -2953,144 +3040,95 @@ document
 
 
       /*
-        白枠の中心を基準に
-        拡大・縮小する
+        ========================================
+        白枠中央を基準にズーム
+        ========================================
       */
 
-      const squareCenterX =
+      const centerX =
         cropState.squareLeft +
         cropState.squareSize / 2;
 
-      const squareCenterY =
+
+      const centerY =
         cropState.squareTop +
         cropState.squareSize / 2;
 
 
-      const oldImageWidth =
+      const oldWidth =
         cropState.sourceImage.naturalWidth *
         cropState.baseScale *
         oldZoom;
 
-      const oldImageHeight =
+
+      const oldHeight =
         cropState.sourceImage.naturalHeight *
         cropState.baseScale *
         oldZoom;
 
 
       /*
-        画像内での
-        白枠中心の相対位置
+        現在、
+        白枠中央が画像のどこを指しているか
       */
 
       const relativeX =
-        (squareCenterX -
+        (centerX -
           cropState.imageLeft) /
-        oldImageWidth;
+        oldWidth;
+
 
       const relativeY =
-        (squareCenterY -
+        (centerY -
           cropState.imageTop) /
-        oldImageHeight;
+        oldHeight;
 
+
+      /*
+        新ズーム
+      */
 
       cropState.zoom =
         newZoom;
 
 
-      const newImageWidth =
+      const newWidth =
         cropState.sourceImage.naturalWidth *
         cropState.baseScale *
         newZoom;
 
-      const newImageHeight =
+
+      const newHeight =
         cropState.sourceImage.naturalHeight *
         cropState.baseScale *
         newZoom;
 
 
       /*
-        白枠中心が同じ画像位置を
-        指し続けるようにする
+        拡大後も同じ画像位置を
+        白枠中央に維持
       */
 
       cropState.imageLeft =
-        squareCenterX -
+        centerX -
         relativeX *
-        newImageWidth;
+        newWidth;
+
 
       cropState.imageTop =
-        squareCenterY -
+        centerY -
         relativeY *
-        newImageHeight;
-
-
-      const image =
-        document.getElementById(
-          "cropImage"
-        );
-
-
-      image.style.width =
-        newImageWidth + "px";
-
-      image.style.height =
-        newImageHeight + "px";
-
-      image.style.left =
-        cropState.imageLeft + "px";
-
-      image.style.top =
-        cropState.imageTop + "px";
+        newHeight;
 
 
       /*
-        白枠の中に
-        必ず画像が存在するよう補正
+        表示更新
+
+        ここで自動的に
+        画像端を超えないよう制限される
       */
 
-      const minImageLeft =
-        cropState.squareLeft +
-        cropState.squareSize -
-        newImageWidth;
-
-      const maxImageLeft =
-        cropState.squareLeft;
-
-
-      const minImageTop =
-        cropState.squareTop +
-        cropState.squareSize -
-        newImageHeight;
-
-      const maxImageTop =
-        cropState.squareTop;
-
-
-      cropState.imageLeft =
-        Math.max(
-          minImageLeft,
-          Math.min(
-            maxImageLeft,
-            cropState.imageLeft
-          )
-        );
-
-
-      cropState.imageTop =
-        Math.max(
-          minImageTop,
-          Math.min(
-            maxImageTop,
-            cropState.imageTop
-          )
-        );
-
-
-      image.style.left =
-        cropState.imageLeft + "px";
-
-      image.style.top =
-        cropState.imageTop + "px";
+      updateCropDisplay();
 
 
       document
@@ -3104,7 +3142,6 @@ document
 
     }
   );
-
 
 /* =========================================================
    切り抜きキャンセル
