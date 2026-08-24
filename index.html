@@ -2658,51 +2658,54 @@ async function openCropForExistingImage(
 
   try {
 
+    if (!image || !image.path) {
+
+      throw new Error(
+        "画像のStorageパスがありません。"
+      );
+
+    }
+
+
+    /*
+      Supabase Storageから直接取得する
+      Public URLをfetch()しない
+    */
+
     const {
-      data
+      data: blob,
+      error
     } =
-    supabaseClient
+    await supabaseClient
       .storage
       .from("images")
-      .getPublicUrl(
+      .download(
         image.path
       );
 
-    const imageUrl =
-      data.publicUrl;
 
-    if (!imageUrl) {
+    if (error) {
 
       throw new Error(
-        "画像URLを取得できませんでした。"
+        "Supabase Storageから画像を取得できませんでした。\n\n" +
+        error.message
       );
 
     }
 
 
-    const response =
-      await fetch(
-        imageUrl,
-        {
-          cache: "no-store"
-        }
-      );
-
-
-    if (!response.ok) {
+    if (!blob) {
 
       throw new Error(
-        "画像を取得できませんでした。\n" +
-        "HTTPステータス: " +
-        response.status
+        "Storageから画像データが返されませんでした。"
       );
 
     }
 
 
-    const blob =
-      await response.blob();
-
+    /*
+      Blob → Data URL
+    */
 
     const dataUrl =
       await fileToDataURL(
@@ -2710,11 +2713,19 @@ async function openCropForExistingImage(
       );
 
 
+    /*
+      Data URL → Image
+    */
+
     const img =
       await loadImageFromDataURL(
         dataUrl
       );
 
+
+    /*
+      切り抜き状態
+    */
 
     cropState = {
 
@@ -2780,7 +2791,6 @@ async function openCropForExistingImage(
   }
 
 }
-
 
 /* =========================================================
    切り抜きモーダル表示
