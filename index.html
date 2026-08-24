@@ -10,9 +10,9 @@
 
 <style>
 
-/* =========================
+/* =========================================================
    基本
-========================= */
+========================================================= */
 
 * {
   box-sizing: border-box;
@@ -75,9 +75,9 @@ button:disabled {
 }
 
 
-/* =========================
+/* =========================================================
    開始画面
-========================= */
+========================================================= */
 
 #startScreen {
   position: fixed;
@@ -105,9 +105,9 @@ button:disabled {
 }
 
 
-/* =========================
+/* =========================================================
    ヘッダー
-========================= */
+========================================================= */
 
 header {
   text-align: center;
@@ -134,9 +134,9 @@ h1 {
 }
 
 
-/* =========================
+/* =========================================================
    コンテナ
-========================= */
+========================================================= */
 
 .container {
   width: min(95%, 1000px);
@@ -158,9 +158,9 @@ h1 {
 }
 
 
-/* =========================
+/* =========================================================
    統計
-========================= */
+========================================================= */
 
 .stats,
 .game-stats {
@@ -210,9 +210,9 @@ small {
 }
 
 
-/* =========================
+/* =========================================================
    入力
-========================= */
+========================================================= */
 
 input[type="text"] {
   width: min(300px, 100%);
@@ -234,9 +234,9 @@ input[type="file"] {
 }
 
 
-/* =========================
+/* =========================================================
    人物
-========================= */
+========================================================= */
 
 .person {
   background: white;
@@ -271,9 +271,9 @@ input[type="file"] {
 }
 
 
-/* =========================
+/* =========================================================
    画像一覧
-========================= */
+========================================================= */
 
 .image-list {
   display: flex;
@@ -328,10 +328,28 @@ input[type="file"] {
   background: #e53935;
 }
 
+.pending-label {
+  display: block;
 
-/* =========================
+  text-align: center;
+
+  margin-top: 4px;
+
+  font-size: 11px;
+
+  color: #e67e22;
+
+  font-weight: bold;
+}
+
+.pending-box {
+  opacity: .9;
+}
+
+
+/* =========================================================
    ゲーム
-========================= */
+========================================================= */
 
 .card-board {
   display: grid;
@@ -411,9 +429,9 @@ input[type="file"] {
 }
 
 
-/* =========================
+/* =========================================================
    メッセージ
-========================= */
+========================================================= */
 
 #message {
   text-align: center;
@@ -441,9 +459,9 @@ input[type="file"] {
 }
 
 
-/* =========================
+/* =========================================================
    切り抜きモーダル
-========================= */
+========================================================= */
 
 #cropModal {
   display: none;
@@ -461,13 +479,13 @@ input[type="file"] {
 
   align-items: center;
 
-  padding: 15px;
+  padding: 10px;
 }
 
 .crop-dialog {
   width: min(95vw, 700px);
 
-  max-height: 95vh;
+  max-height: 96vh;
 
   overflow-y: auto;
 
@@ -491,7 +509,7 @@ input[type="file"] {
 
   width: 100%;
 
-  max-height: 65vh;
+  height: min(65vh, 600px);
 
   overflow: hidden;
 
@@ -508,15 +526,31 @@ input[type="file"] {
   border-radius: 12px;
 }
 
+/*
+  重要：
+  imgをmax-width/max-heightだけで変形させるのではなく、
+  JavaScript側でサイズを設定する。
+  これによりズーム時の黒画面問題を防ぐ。
+*/
+
 #cropImage {
+  position: absolute;
+
   display: block;
 
-  max-width: 100%;
-  max-height: 65vh;
+  max-width: none;
+  max-height: none;
+
+  width: auto;
+  height: auto;
 
   user-select: none;
 
   -webkit-user-drag: none;
+
+  transform-origin: center center;
+
+  pointer-events: none;
 }
 
 .crop-square {
@@ -531,6 +565,8 @@ input[type="file"] {
   cursor: move;
 
   touch-action: none;
+
+  z-index: 5;
 }
 
 .crop-controls {
@@ -554,9 +590,9 @@ input[type="file"] {
 }
 
 
-/* =========================
-   エラー表示
-========================= */
+/* =========================================================
+   エラー
+========================================================= */
 
 #errorBox {
   display: none;
@@ -575,9 +611,9 @@ input[type="file"] {
 }
 
 
-/* =========================
+/* =========================================================
    スマホ
-========================= */
+========================================================= */
 
 @media (max-width: 600px) {
 
@@ -613,6 +649,14 @@ input[type="file"] {
     padding: 15px;
   }
 
+  .crop-area {
+    height: 55vh;
+  }
+
+  .crop-controls input[type="range"] {
+    width: 95%;
+  }
+
 }
 
 </style>
@@ -622,9 +666,9 @@ input[type="file"] {
 <body>
 
 
-<!-- =========================
+<!-- =========================================================
      開始画面
-========================= -->
+========================================================= -->
 
 <div id="startScreen">
 
@@ -638,9 +682,9 @@ input[type="file"] {
 </div>
 
 
-<!-- =========================
+<!-- =========================================================
      エラー表示
-========================= -->
+========================================================= -->
 
 <div id="errorBox"></div>
 
@@ -658,15 +702,17 @@ input[type="file"] {
 </header>
 
 
-<!-- =========================
+<!-- =========================================================
      統計
-========================= -->
+========================================================= -->
 
 <div class="stats">
 
   <div class="stat-box">
 
-    <span id="personCount">0</span>
+    <span id="personCount">
+      0
+    </span>
 
     <small>
       人物数
@@ -677,7 +723,9 @@ input[type="file"] {
 
   <div class="stat-box">
 
-    <span id="imageCount">0</span>
+    <span id="imageCount">
+      0
+    </span>
 
     <small>
       画像数
@@ -691,9 +739,9 @@ input[type="file"] {
 <div class="container">
 
 
-<!-- =========================
+<!-- =========================================================
      編集画面
-========================= -->
+========================================================= -->
 
 <div
   id="editor"
@@ -737,9 +785,9 @@ input[type="file"] {
 </div>
 
 
-<!-- =========================
+<!-- =========================================================
      ゲーム画面
-========================= -->
+========================================================= -->
 
 <div
   id="game"
@@ -803,9 +851,9 @@ input[type="file"] {
 </div>
 
 
-<!-- =========================
+<!-- =========================================================
      切り抜き画面
-========================= -->
+========================================================= -->
 
 <div id="cropModal">
 
@@ -854,6 +902,12 @@ input[type="file"] {
         step="0.01"
         value="1"
       >
+
+      <div>
+        <small id="zoomText">
+          100%
+        </small>
+      </div>
 
     </div>
 
@@ -965,6 +1019,20 @@ let moves = 0;
 
 
 /* =========================================================
+   未切り抜き画像
+========================================================= */
+
+/*
+  Supabaseにまだ保存していない、
+  一時的な画像をここに保持する。
+
+  personIdごとに配列で管理。
+*/
+
+let pendingImages = {};
+
+
+/* =========================================================
    切り抜き用データ
 ========================================================= */
 
@@ -982,11 +1050,23 @@ let cropState = {
 
   sourceImage: null,
 
-  scale: 1,
+  originalDisplayWidth: 0,
 
-  offsetX: 0,
+  originalDisplayHeight: 0,
 
-  offsetY: 0,
+  baseScale: 1,
+
+  zoom: 1,
+
+  imageLeft: 0,
+
+  imageTop: 0,
+
+  squareLeft: 0,
+
+  squareTop: 0,
+
+  squareSize: 0,
 
   dragging: false,
 
@@ -994,9 +1074,9 @@ let cropState = {
 
   startY: 0,
 
-  startOffsetX: 0,
+  startSquareLeft: 0,
 
-  startOffsetY: 0
+  startSquareTop: 0
 
 };
 
@@ -1011,7 +1091,8 @@ async function enterSite() {
     .getElementById(
       "startScreen"
     )
-    .style.display = "none";
+    .style.display =
+    "none";
 
 
   await loadPeople();
@@ -1234,6 +1315,15 @@ async function deletePerson(person) {
   }
 
 
+  /*
+    保留中画像も削除
+  */
+
+  delete pendingImages[
+    person.id
+  ];
+
+
   const paths =
     person.images.map(
       image =>
@@ -1367,8 +1457,18 @@ function renderPeople() {
         );
 
 
+      const pendingCount =
+        (
+          pendingImages[person.id] ||
+          []
+        ).length;
+
+
       title.textContent =
-        `${person.name}（画像 ${person.images.length}枚）`;
+        `${person.name}（画像 ${
+          person.images.length +
+          pendingCount
+        }枚）`;
 
 
       header.appendChild(
@@ -1441,27 +1541,17 @@ function renderPeople() {
           }
 
 
-          fileInput.disabled =
-            true;
+          await addPendingImages(
+            person,
+            files
+          );
 
 
-          for (
-            const file
-            of files
-          ) {
-
-            await openCropForNewImage(
-              person,
-              file
-            );
-
-          }
-
+          /*
+            同じファイルを再選択できるようにする
+          */
 
           fileInput.value = "";
-
-          fileInput.disabled =
-            false;
 
         };
 
@@ -1485,113 +1575,39 @@ function renderPeople() {
         "image-list";
 
 
+      /* -------------------------
+         保存済み画像
+      ------------------------- */
+
       person.images.forEach(
         image => {
 
-          const imageBox =
-            document.createElement(
-              "div"
-            );
-
-
-          imageBox.className =
-            "image-box";
-
-
-          const img =
-            document.createElement(
-              "img"
-            );
-
-
-          img.src =
-            image.url;
-
-
-          img.onerror =
-            function() {
-
-              img.alt =
-                "画像を読み込めません";
-
-            };
-
-
-          imageBox.appendChild(
-            img
+          createSavedImageBox(
+            imageList,
+            person,
+            image
           );
 
-
-          const buttons =
-            document.createElement(
-              "div"
-            );
+        }
+      );
 
 
-          buttons.className =
-            "image-buttons";
+      /* -------------------------
+         未切り抜き画像
+      ------------------------- */
+
+      const pending =
+        pendingImages[person.id] ||
+        [];
 
 
-          /* 切り抜き変更 */
+      pending.forEach(
+        pendingImage => {
 
-          const cropButton =
-            document.createElement(
-              "button"
-            );
-
-
-          cropButton.textContent =
-            "✂️ 切り抜き";
-
-
-          cropButton.onclick =
-            () =>
-              openCropForExistingImage(
-                person,
-                image
-              );
-
-
-          buttons.appendChild(
-            cropButton
-          );
-
-
-          /* 削除 */
-
-          const deleteImageButton =
-            document.createElement(
-              "button"
-            );
-
-
-          deleteImageButton.textContent =
-            "× 削除";
-
-
-          deleteImageButton.className =
-            "delete-button";
-
-
-          deleteImageButton.onclick =
-            () =>
-              deleteImage(
-                image
-              );
-
-
-          buttons.appendChild(
-            deleteImageButton
-          );
-
-
-          imageBox.appendChild(
-            buttons
-          );
-
-
-          imageList.appendChild(
-            imageBox
+          createPendingImageBox(
+            imageList,
+            person,
+            pendingImage
           );
 
         }
@@ -1617,12 +1633,393 @@ function renderPeople() {
 
 
 /* =========================================================
+   保存済み画像BOX
+========================================================= */
+
+function createSavedImageBox(
+  imageList,
+  person,
+  image
+) {
+
+  const imageBox =
+    document.createElement(
+      "div"
+    );
+
+
+  imageBox.className =
+    "image-box";
+
+
+  const img =
+    document.createElement(
+      "img"
+    );
+
+
+  img.src =
+    image.url;
+
+
+  img.onerror =
+    function() {
+
+      img.alt =
+        "画像を読み込めません";
+
+    };
+
+
+  imageBox.appendChild(
+    img
+  );
+
+
+  const buttons =
+    document.createElement(
+      "div"
+    );
+
+
+  buttons.className =
+    "image-buttons";
+
+
+  /* 切り抜き変更 */
+
+  const cropButton =
+    document.createElement(
+      "button"
+    );
+
+
+  cropButton.textContent =
+    "✂️ 切り抜き";
+
+
+  cropButton.onclick =
+    () =>
+      openCropForExistingImage(
+        person,
+        image
+      );
+
+
+  buttons.appendChild(
+    cropButton
+  );
+
+
+  /* 削除 */
+
+  const deleteImageButton =
+    document.createElement(
+      "button"
+    );
+
+
+  deleteImageButton.textContent =
+    "× 削除";
+
+
+  deleteImageButton.className =
+    "delete-button";
+
+
+  deleteImageButton.onclick =
+    () =>
+      deleteImage(
+        image
+      );
+
+
+  buttons.appendChild(
+    deleteImageButton
+  );
+
+
+  imageBox.appendChild(
+    buttons
+  );
+
+
+  imageList.appendChild(
+    imageBox
+  );
+
+}
+
+
+/* =========================================================
+   未切り抜き画像BOX
+========================================================= */
+
+function createPendingImageBox(
+  imageList,
+  person,
+  pendingImage
+) {
+
+  const imageBox =
+    document.createElement(
+      "div"
+    );
+
+
+  imageBox.className =
+    "image-box pending-box";
+
+
+  const img =
+    document.createElement(
+      "img"
+    );
+
+
+  img.src =
+    pendingImage.previewUrl;
+
+
+  imageBox.appendChild(
+    img
+  );
+
+
+  const label =
+    document.createElement(
+      "span"
+    );
+
+
+  label.className =
+    "pending-label";
+
+
+  label.textContent =
+    "未切り抜き";
+
+
+  imageBox.appendChild(
+    label
+  );
+
+
+  const buttons =
+    document.createElement(
+      "div"
+    );
+
+
+  buttons.className =
+    "image-buttons";
+
+
+  /* 切り抜き */
+
+  const cropButton =
+    document.createElement(
+      "button"
+    );
+
+
+  cropButton.textContent =
+    "✂️ 切り抜き";
+
+
+  cropButton.onclick =
+    () =>
+      openCropForPendingImage(
+        person,
+        pendingImage
+      );
+
+
+  buttons.appendChild(
+    cropButton
+  );
+
+
+  /* 保留画像削除 */
+
+  const deleteButton =
+    document.createElement(
+      "button"
+    );
+
+
+  deleteButton.textContent =
+    "× 削除";
+
+
+  deleteButton.className =
+    "delete-button";
+
+
+  deleteButton.onclick =
+    () =>
+      deletePendingImage(
+        person,
+        pendingImage
+      );
+
+
+  buttons.appendChild(
+    deleteButton
+  );
+
+
+  imageBox.appendChild(
+    buttons
+  );
+
+
+  imageList.appendChild(
+    imageBox
+  );
+
+}
+
+
+/* =========================================================
+   複数画像を一括追加
+========================================================= */
+
+async function addPendingImages(
+  person,
+  files
+) {
+
+  if (
+    !pendingImages[person.id]
+  ) {
+
+    pendingImages[person.id] =
+      [];
+
+  }
+
+
+  for (
+    const file
+    of files
+  ) {
+
+    if (
+      !file.type.startsWith(
+        "image/"
+      )
+    ) {
+
+      continue;
+
+    }
+
+
+    try {
+
+      const dataUrl =
+        await fileToDataURL(
+          file
+        );
+
+
+      /*
+        画像表示用URL
+      */
+
+      const previewUrl =
+        dataUrl;
+
+
+      pendingImages[
+        person.id
+      ].push({
+
+        id:
+          crypto.randomUUID
+          ? crypto.randomUUID()
+          : String(
+              Date.now() +
+              Math.random()
+            ),
+
+        file:
+          file,
+
+        dataUrl:
+          dataUrl,
+
+        previewUrl:
+          previewUrl
+
+      });
+
+    }
+
+    catch(error) {
+
+      console.error(
+        error
+      );
+
+      alert(
+        `${file.name} の読み込みに失敗しました`
+      );
+
+    }
+
+  }
+
+
+  renderPeople();
+
+}
+
+
+/* =========================================================
+   未切り抜き画像削除
+========================================================= */
+
+function deletePendingImage(
+  person,
+  pendingImage
+) {
+
+  if (
+    !confirm(
+      "この画像を削除しますか？"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  pendingImages[person.id] =
+    (
+      pendingImages[person.id] ||
+      []
+    ).filter(
+      image =>
+        image.id !==
+        pendingImage.id
+    );
+
+
+  renderPeople();
+
+}
+
+
+/* =========================================================
    統計
 ========================================================= */
 
 function updateCounts() {
 
-  const imageCount =
+  const savedCount =
     people.reduce(
       (
         total,
@@ -1630,6 +2027,20 @@ function updateCounts() {
       ) =>
         total +
         person.images.length,
+      0
+    );
+
+
+  const pendingCount =
+    Object.values(
+      pendingImages
+    ).reduce(
+      (
+        total,
+        images
+      ) =>
+        total +
+        images.length,
       0
     );
 
@@ -1647,7 +2058,8 @@ function updateCounts() {
       "imageCount"
     )
     .textContent =
-    imageCount;
+    savedCount +
+    pendingCount;
 
 }
 
@@ -1693,7 +2105,7 @@ function fileToDataURL(file) {
 
 
 /* =========================================================
-   切り抜き用画像読み込み
+   Data URL → Image
 ========================================================= */
 
 function loadImageFromDataURL(
@@ -1736,6 +2148,106 @@ function loadImageFromDataURL(
 
 
 /* =========================================================
+   未切り抜き画像を切り抜き
+========================================================= */
+
+async function openCropForPendingImage(
+  person,
+  pendingImage
+) {
+
+  try {
+
+    const img =
+      await loadImageFromDataURL(
+        pendingImage.dataUrl
+      );
+
+
+    cropState = {
+
+      mode:
+        "pending",
+
+      person:
+        person,
+
+      image:
+        pendingImage,
+
+      file:
+        pendingImage.file,
+
+      imageDataUrl:
+        pendingImage.dataUrl,
+
+      sourceImage:
+        img,
+
+      originalDisplayWidth:
+        0,
+
+      originalDisplayHeight:
+        0,
+
+      baseScale:
+        1,
+
+      zoom:
+        1,
+
+      imageLeft:
+        0,
+
+      imageTop:
+        0,
+
+      squareLeft:
+        0,
+
+      squareTop:
+        0,
+
+      squareSize:
+        0,
+
+      dragging:
+        false,
+
+      startX:
+        0,
+
+      startY:
+        0,
+
+      startSquareLeft:
+        0,
+
+      startSquareTop:
+        0
+
+    };
+
+
+    showCropModal();
+
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+    alert(
+      "画像の読み込みに失敗しました\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================================
    新規画像の切り抜き
 ========================================================= */
 
@@ -1744,22 +2256,13 @@ async function openCropForNewImage(
   file
 ) {
 
+  /*
+    この関数は互換性のため残している。
+    現在の通常操作では addPendingImages()
+    を使用する。
+  */
+
   try {
-
-    if (
-      !file.type.startsWith(
-        "image/"
-      )
-    ) {
-
-      alert(
-        "画像ファイルを選択してください"
-      );
-
-      return;
-
-    }
-
 
     const dataUrl =
       await fileToDataURL(
@@ -1773,54 +2276,52 @@ async function openCropForNewImage(
       );
 
 
-    cropState = {
+    const pendingImage = {
 
-      mode:
-        "new",
-
-      person:
-        person,
-
-      image:
-        null,
+      id:
+        crypto.randomUUID
+        ? crypto.randomUUID()
+        : String(
+            Date.now() +
+            Math.random()
+          ),
 
       file:
         file,
 
-      imageDataUrl:
+      dataUrl:
         dataUrl,
 
-      sourceImage:
-        img,
-
-      scale:
-        1,
-
-      offsetX:
-        0,
-
-      offsetY:
-        0,
-
-      dragging:
-        false,
-
-      startX:
-        0,
-
-      startY:
-        0,
-
-      startOffsetX:
-        0,
-
-      startOffsetY:
-        0
+      previewUrl:
+        dataUrl
 
     };
 
 
-    showCropModal();
+    if (
+      !pendingImages[person.id]
+    ) {
+
+      pendingImages[person.id] =
+        [];
+
+    }
+
+
+    pendingImages[
+      person.id
+    ].push(
+      pendingImage
+    );
+
+
+    renderPeople();
+
+
+    openCropForPendingImage(
+      person,
+      pendingImage
+    );
 
   }
 
@@ -1851,7 +2352,10 @@ async function openCropForExistingImage(
 
     const response =
       await fetch(
-        image.url
+        image.url,
+        {
+          cache: "no-cache"
+        }
       );
 
 
@@ -1900,13 +2404,31 @@ async function openCropForExistingImage(
       sourceImage:
         img,
 
-      scale:
-        1,
-
-      offsetX:
+      originalDisplayWidth:
         0,
 
-      offsetY:
+      originalDisplayHeight:
+        0,
+
+      baseScale:
+        1,
+
+      zoom:
+        1,
+
+      imageLeft:
+        0,
+
+      imageTop:
+        0,
+
+      squareLeft:
+        0,
+
+      squareTop:
+        0,
+
+      squareSize:
         0,
 
       dragging:
@@ -1918,10 +2440,10 @@ async function openCropForExistingImage(
       startY:
         0,
 
-      startOffsetX:
+      startSquareLeft:
         0,
 
-      startOffsetY:
+      startSquareTop:
         0
 
     };
@@ -1963,37 +2485,66 @@ function showCropModal() {
     );
 
 
+  const zoomRange =
+    document.getElementById(
+      "zoomRange"
+    );
+
+
+  cropImage.onload =
+    null;
+
+
   cropImage.src =
-    cropState.imageDataUrl;
+    "";
+
+
+  /*
+    少し待ってからsrcを設定することで、
+    古い画像の描画が残る問題を避ける。
+  */
+
+  requestAnimationFrame(
+    () => {
+
+      cropImage.onload =
+        function() {
+
+          setupCropArea();
+
+        };
+
+
+      cropImage.src =
+        cropState.imageDataUrl;
+
+    }
+  );
+
+
+  zoomRange.value =
+    1;
 
 
   document
     .getElementById(
-      "zoomRange"
+      "zoomText"
     )
-    .value =
-    1;
+    .textContent =
+    "100%";
 
 
   modal.style.display =
     "flex";
 
-
-  cropImage.onload =
-    function() {
-
-      setupCropSquare();
-
-    };
-
 }
 
 
 /* =========================================================
-   切り抜き四角を初期配置
+   切り抜きエリア初期化
 ========================================================= */
 
-function setupCropSquare() {
+function setupCropArea() {
 
   const area =
     document.getElementById(
@@ -2013,59 +2564,336 @@ function setupCropSquare() {
     );
 
 
-  const imageRect =
-    image.getBoundingClientRect();
+  if (
+    !cropState.sourceImage
+  ) {
+
+    return;
+
+  }
 
 
-  const areaRect =
-    area.getBoundingClientRect();
+  const areaWidth =
+    area.clientWidth;
 
 
-  const size =
+  const areaHeight =
+    area.clientHeight;
+
+
+  const naturalWidth =
+    cropState.sourceImage.naturalWidth;
+
+
+  const naturalHeight =
+    cropState.sourceImage.naturalHeight;
+
+
+  /*
+    元画像を「できるだけ大きく」表示。
+    以前より元画像に近いサイズ。
+  */
+
+  const fitScale =
     Math.min(
-      imageRect.width,
-      imageRect.height
+      areaWidth / naturalWidth,
+      areaHeight / naturalHeight
+    );
+
+
+  /*
+    小さすぎる画像にならないようにする
+  */
+
+  const displayScale =
+    Math.max(
+      fitScale,
+      0.01
+    );
+
+
+  cropState.baseScale =
+    displayScale;
+
+
+  cropState.zoom =
+    1;
+
+
+  cropState.originalDisplayWidth =
+    naturalWidth *
+    displayScale;
+
+
+  cropState.originalDisplayHeight =
+    naturalHeight *
+    displayScale;
+
+
+  cropState.imageLeft =
+    (
+      areaWidth -
+      cropState.originalDisplayWidth
+    ) / 2;
+
+
+  cropState.imageTop =
+    (
+      areaHeight -
+      cropState.originalDisplayHeight
+    ) / 2;
+
+
+  /*
+    正方形のサイズ
+  */
+
+  const squareSize =
+    Math.min(
+      cropState.originalDisplayWidth,
+      cropState.originalDisplayHeight
     ) * 0.65;
 
 
+  cropState.squareSize =
+    squareSize;
+
+
+  cropState.squareLeft =
+    cropState.imageLeft +
+    (
+      cropState.originalDisplayWidth -
+      squareSize
+    ) / 2;
+
+
+  cropState.squareTop =
+    cropState.imageTop +
+    (
+      cropState.originalDisplayHeight -
+      squareSize
+    ) / 2;
+
+
   square.style.width =
-    size + "px";
+    squareSize + "px";
 
 
   square.style.height =
-    size + "px";
+    squareSize + "px";
 
 
-  square.style.left =
-    (
-      imageRect.left -
-      areaRect.left +
-      (
-        imageRect.width -
-        size
-      ) / 2
-    ) + "px";
-
-
-  square.style.top =
-    (
-      imageRect.top -
-      areaRect.top +
-      (
-        imageRect.height -
-        size
-      ) / 2
-    ) + "px";
-
-
-  cropState.offsetX = 0;
-  cropState.offsetY = 0;
+  updateCropDisplay();
 
 }
 
 
 /* =========================================================
-   切り抜き四角のドラッグ
+   切り抜き表示更新
+========================================================= */
+
+function updateCropDisplay() {
+
+  const image =
+    document.getElementById(
+      "cropImage"
+    );
+
+
+  const square =
+    document.getElementById(
+      "cropSquare"
+    );
+
+
+  const scale =
+    cropState.baseScale *
+    cropState.zoom;
+
+
+  const width =
+    cropState.sourceImage.naturalWidth *
+    scale;
+
+
+  const height =
+    cropState.sourceImage.naturalHeight *
+    scale;
+
+
+  /*
+    ズーム時は中心を基準にする
+  */
+
+  const area =
+    document.getElementById(
+      "cropArea"
+    );
+
+
+  const centerX =
+    area.clientWidth / 2;
+
+
+  const centerY =
+    area.clientHeight / 2;
+
+
+  /*
+    初期位置を中心基準で計算
+  */
+
+  const newLeft =
+    centerX -
+    width / 2;
+
+
+  const newTop =
+    centerY -
+    height / 2;
+
+
+  /*
+    ズーム時に切り抜き位置が
+    大きく飛ばないように補正
+  */
+
+  if (
+    cropState.zoom === 1
+  ) {
+
+    cropState.imageLeft =
+      newLeft;
+
+    cropState.imageTop =
+      newTop;
+
+  }
+
+
+  image.style.width =
+    width + "px";
+
+
+  image.style.height =
+    height + "px";
+
+
+  image.style.left =
+    cropState.imageLeft + "px";
+
+
+  image.style.top =
+    cropState.imageTop + "px";
+
+
+  square.style.left =
+    cropState.squareLeft + "px";
+
+
+  square.style.top =
+    cropState.squareTop + "px";
+
+
+  /*
+    四角が画像外に出ないよう補正
+  */
+
+  constrainCropSquare();
+
+}
+
+
+/* =========================================================
+   切り抜き四角の範囲補正
+========================================================= */
+
+function constrainCropSquare() {
+
+  const image =
+    document.getElementById(
+      "cropImage"
+    );
+
+
+  const imageLeft =
+    cropState.imageLeft;
+
+
+  const imageTop =
+    cropState.imageTop;
+
+
+  const imageWidth =
+    image.offsetWidth;
+
+
+  const imageHeight =
+    image.offsetHeight;
+
+
+  const size =
+    cropState.squareSize;
+
+
+  const minLeft =
+    imageLeft;
+
+
+  const minTop =
+    imageTop;
+
+
+  const maxLeft =
+    imageLeft +
+    imageWidth -
+    size;
+
+
+  const maxTop =
+    imageTop +
+    imageHeight -
+    size;
+
+
+  cropState.squareLeft =
+    Math.max(
+      minLeft,
+      Math.min(
+        maxLeft,
+        cropState.squareLeft
+      )
+    );
+
+
+  cropState.squareTop =
+    Math.max(
+      minTop,
+      Math.min(
+        maxTop,
+        cropState.squareTop
+      )
+    );
+
+
+  const square =
+    document.getElementById(
+      "cropSquare"
+    );
+
+
+  square.style.left =
+    cropState.squareLeft + "px";
+
+
+  square.style.top =
+    cropState.squareTop + "px";
+
+}
+
+
+/* =========================================================
+   切り抜き四角ドラッグ
 ========================================================= */
 
 const cropSquare =
@@ -2089,21 +2917,11 @@ cropSquare.addEventListener(
     cropState.startY =
       e.clientY;
 
-    const left =
-      parseFloat(
-        cropSquare.style.left
-      ) || 0;
+    cropState.startSquareLeft =
+      cropState.squareLeft;
 
-    const top =
-      parseFloat(
-        cropSquare.style.top
-      ) || 0;
-
-    cropState.startOffsetX =
-      left;
-
-    cropState.startOffsetY =
-      top;
+    cropState.startSquareTop =
+      cropState.squareTop;
 
 
     cropSquare.setPointerCapture(
@@ -2121,98 +2939,33 @@ cropSquare.addEventListener(
     if (
       !cropState.dragging
     ) {
+
       return;
+
     }
 
 
-    const area =
-      document.getElementById(
-        "cropArea"
-      );
+    const dx =
+      e.clientX -
+      cropState.startX;
 
 
-    const image =
-      document.getElementById(
-        "cropImage"
-      );
+    const dy =
+      e.clientY -
+      cropState.startY;
 
 
-    const areaRect =
-      area.getBoundingClientRect();
+    cropState.squareLeft =
+      cropState.startSquareLeft +
+      dx;
 
 
-    const imageRect =
-      image.getBoundingClientRect();
+    cropState.squareTop =
+      cropState.startSquareTop +
+      dy;
 
 
-    const squareSize =
-      cropSquare.offsetWidth;
-
-
-    let left =
-      cropState.startOffsetX +
-      (
-        e.clientX -
-        cropState.startX
-      );
-
-
-    let top =
-      cropState.startOffsetY +
-      (
-        e.clientY -
-        cropState.startY
-      );
-
-
-    const minLeft =
-      imageRect.left -
-      areaRect.left;
-
-
-    const minTop =
-      imageRect.top -
-      areaRect.top;
-
-
-    const maxLeft =
-      minLeft +
-      imageRect.width -
-      squareSize;
-
-
-    const maxTop =
-      minTop +
-      imageRect.height -
-      squareSize;
-
-
-    left =
-      Math.max(
-        minLeft,
-        Math.min(
-          maxLeft,
-          left
-        )
-      );
-
-
-    top =
-      Math.max(
-        minTop,
-        Math.min(
-          maxTop,
-          top
-        )
-      );
-
-
-    cropSquare.style.left =
-      left + "px";
-
-
-    cropSquare.style.top =
-      top + "px";
+    constrainCropSquare();
 
   }
 );
@@ -2220,6 +2973,17 @@ cropSquare.addEventListener(
 
 cropSquare.addEventListener(
   "pointerup",
+  function() {
+
+    cropState.dragging =
+      false;
+
+  }
+);
+
+
+cropSquare.addEventListener(
+  "pointercancel",
   function() {
 
     cropState.dragging =
@@ -2241,11 +3005,119 @@ document
     "input",
     function() {
 
-      const zoom =
+      const oldZoom =
+        cropState.zoom;
+
+
+      const newZoom =
         parseFloat(
           this.value
         );
 
+
+      /*
+        現在の四角の中心を維持
+      */
+
+      const squareCenterX =
+        cropState.squareLeft +
+        cropState.squareSize / 2;
+
+
+      const squareCenterY =
+        cropState.squareTop +
+        cropState.squareSize / 2;
+
+
+      const area =
+        document.getElementById(
+          "cropArea"
+        );
+
+
+      const centerX =
+        area.clientWidth / 2;
+
+
+      const centerY =
+        area.clientHeight / 2;
+
+
+      const oldImageWidth =
+        cropState.sourceImage.naturalWidth *
+        cropState.baseScale *
+        oldZoom;
+
+
+      const oldImageHeight =
+        cropState.sourceImage.naturalHeight *
+        cropState.baseScale *
+        oldZoom;
+
+
+      /*
+        画像中心から四角中心までの距離
+      */
+
+      const relativeX =
+        squareCenterX -
+        centerX;
+
+
+      const relativeY =
+        squareCenterY -
+        centerY;
+
+
+      /*
+        ズームによって画像位置を変更
+      */
+
+      const ratio =
+        newZoom /
+        oldZoom;
+
+
+      cropState.imageLeft =
+        centerX +
+        (
+          cropState.imageLeft -
+          centerX
+        ) * ratio;
+
+
+      cropState.imageTop =
+        centerY +
+        (
+          cropState.imageTop -
+          centerY
+        ) * ratio;
+
+
+      /*
+        四角位置も画像中心基準で維持
+      */
+
+      cropState.squareLeft =
+        centerX +
+        relativeX * ratio -
+        cropState.squareSize / 2;
+
+
+      cropState.squareTop =
+        centerY +
+        relativeY * ratio -
+        cropState.squareSize / 2;
+
+
+      cropState.zoom =
+        newZoom;
+
+
+      /*
+        実際の画像位置を維持するため、
+        updateCropDisplayではimageLeft/imageTopを使う。
+      */
 
       const image =
         document.getElementById(
@@ -2253,8 +3125,61 @@ document
         );
 
 
-      image.style.transform =
-        `scale(${zoom})`;
+      const width =
+        cropState.sourceImage.naturalWidth *
+        cropState.baseScale *
+        newZoom;
+
+
+      const height =
+        cropState.sourceImage.naturalHeight *
+        cropState.baseScale *
+        newZoom;
+
+
+      image.style.width =
+        width + "px";
+
+
+      image.style.height =
+        height + "px";
+
+
+      image.style.left =
+        cropState.imageLeft + "px";
+
+
+      image.style.top =
+        cropState.imageTop + "px";
+
+
+      document
+        .getElementById(
+          "cropSquare"
+        )
+        .style.left =
+        cropState.squareLeft + "px";
+
+
+      document
+        .getElementById(
+          "cropSquare"
+        )
+        .style.top =
+        cropState.squareTop + "px";
+
+
+      constrainCropSquare();
+
+
+      document
+        .getElementById(
+          "zoomText"
+        )
+        .textContent =
+        Math.round(
+          newZoom * 100
+        ) + "%";
 
     }
   );
@@ -2274,36 +3199,79 @@ function closeCropModal() {
     "none";
 
 
-  document
-    .getElementById(
+  const cropImage =
+    document.getElementById(
       "cropImage"
-    )
-    .style.transform =
-    "none";
+    );
 
 
-  cropState =
-    {
+  cropImage.src =
+    "";
 
-      mode:
-        "new",
 
-      person:
-        null,
+  cropState = {
 
-      image:
-        null,
+    mode:
+      "new",
 
-      file:
-        null,
+    person:
+      null,
 
-      imageDataUrl:
-        null,
+    image:
+      null,
 
-      sourceImage:
-        null
+    file:
+      null,
 
-    };
+    imageDataUrl:
+      null,
+
+    sourceImage:
+      null,
+
+    originalDisplayWidth:
+      0,
+
+    originalDisplayHeight:
+      0,
+
+    baseScale:
+      1,
+
+    zoom:
+      1,
+
+    imageLeft:
+      0,
+
+    imageTop:
+      0,
+
+    squareLeft:
+      0,
+
+    squareTop:
+      0,
+
+    squareSize:
+      0,
+
+    dragging:
+      false,
+
+    startX:
+      0,
+
+    startY:
+      0,
+
+    startSquareLeft:
+      0,
+
+    startSquareTop:
+      0
+
+  };
 
 }
 
@@ -2318,58 +3286,48 @@ async function createCroppedBlob() {
     cropState.sourceImage;
 
 
-  const cropImage =
-    document.getElementById(
-      "cropImage"
+  if (!image) {
+
+    throw new Error(
+      "元画像がありません"
     );
 
-
-  const square =
-    document.getElementById(
-      "cropSquare"
-    );
-
-
-  const imageRect =
-    cropImage.getBoundingClientRect();
-
-
-  const squareRect =
-    square.getBoundingClientRect();
+  }
 
 
   /*
-    画面上での切り抜き位置
+    表示上の画像
+  */
+
+  const displayScale =
+    cropState.baseScale *
+    cropState.zoom;
+
+
+  /*
+    四角の左上位置を
+    元画像座標へ変換
   */
 
   let sx =
     (
-      squareRect.left -
-      imageRect.left
-    ) *
-    (
-      image.naturalWidth /
-      imageRect.width
-    );
+      cropState.squareLeft -
+      cropState.imageLeft
+    ) /
+    displayScale;
 
 
   let sy =
     (
-      squareRect.top -
-      imageRect.top
-    ) *
-    (
-      image.naturalHeight /
-      imageRect.height
-    );
+      cropState.squareTop -
+      cropState.imageTop
+    ) /
+    displayScale;
 
 
   let size =
-    squareRect.width *
-    (
-      image.naturalWidth /
-      imageRect.width
-    );
+    cropState.squareSize /
+    displayScale;
 
 
   /*
@@ -2380,7 +3338,8 @@ async function createCroppedBlob() {
     Math.max(
       0,
       Math.min(
-        image.naturalWidth - size,
+        image.naturalWidth -
+        size,
         sx
       )
     );
@@ -2390,7 +3349,8 @@ async function createCroppedBlob() {
     Math.max(
       0,
       Math.min(
-        image.naturalHeight - size,
+        image.naturalHeight -
+        size,
         sy
       )
     );
@@ -2399,9 +3359,22 @@ async function createCroppedBlob() {
   size =
     Math.min(
       size,
-      image.naturalWidth - sx,
-      image.naturalHeight - sy
+      image.naturalWidth -
+      sx,
+      image.naturalHeight -
+      sy
     );
+
+
+  if (
+    size <= 0
+  ) {
+
+    throw new Error(
+      "切り抜き範囲が不正です"
+    );
+
+  }
 
 
   /*
@@ -2458,16 +3431,32 @@ async function createCroppedBlob() {
 
 
   return new Promise(
-    resolve => {
+    (
+      resolve,
+      reject
+    ) => {
 
       canvas.toBlob(
         blob => {
+
+          if (!blob) {
+
+            reject(
+              new Error(
+                "画像の生成に失敗しました"
+              )
+            );
+
+            return;
+
+          }
+
 
           resolve(blob);
 
         },
         "image/jpeg",
-        0.88
+        0.90
       );
 
     }
@@ -2502,11 +3491,107 @@ async function saveCrop() {
       await createCroppedBlob();
 
 
-    if (!blob) {
+    /*
+    =========================
+    保留画像
+    =========================
+    */
 
-      throw new Error(
-        "切り抜き画像の作成に失敗しました"
-      );
+    if (
+      cropState.mode ===
+      "pending"
+    ) {
+
+      const person =
+        cropState.person;
+
+
+      const pendingImage =
+        cropState.image;
+
+
+      const fileName =
+        `${person.id}/${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2)}.jpg`;
+
+
+      const {
+        error:
+          uploadError
+      } =
+      await supabaseClient
+        .storage
+        .from("images")
+        .upload(
+          fileName,
+          blob,
+          {
+
+            contentType:
+              "image/jpeg",
+
+            upsert:
+              false
+
+          }
+        );
+
+
+      if (uploadError) {
+
+        throw uploadError;
+
+      }
+
+
+      const {
+        error:
+          dbError
+      } =
+      await supabaseClient
+        .from("person_images")
+        .insert({
+
+          person_id:
+            person.id,
+
+          image_path:
+            fileName
+
+        });
+
+
+      if (dbError) {
+
+        await supabaseClient
+          .storage
+          .from("images")
+          .remove([
+            fileName
+          ]);
+
+        throw dbError;
+
+      }
+
+
+      /*
+        保留中リストから削除
+      */
+
+      pendingImages[
+        person.id
+      ] =
+        (
+          pendingImages[
+            person.id
+          ] || []
+        ).filter(
+          image =>
+            image.id !==
+            pendingImage.id
+        );
 
     }
 
@@ -2517,7 +3602,7 @@ async function saveCrop() {
     =========================
     */
 
-    if (
+    else if (
       cropState.mode ===
       "new"
     ) {
@@ -2536,22 +3621,22 @@ async function saveCrop() {
         error:
           uploadError
       } =
-        await supabaseClient
-          .storage
-          .from("images")
-          .upload(
-            fileName,
-            blob,
-            {
+      await supabaseClient
+        .storage
+        .from("images")
+        .upload(
+          fileName,
+          blob,
+          {
 
-              contentType:
-                "image/jpeg",
+            contentType:
+              "image/jpeg",
 
-              upsert:
-                false
+            upsert:
+              false
 
-            }
-          );
+          }
+        );
 
 
       if (uploadError) {
@@ -2565,24 +3650,20 @@ async function saveCrop() {
         error:
           dbError
       } =
-        await supabaseClient
-          .from("person_images")
-          .insert({
+      await supabaseClient
+        .from("person_images")
+        .insert({
 
-            person_id:
-              person.id,
+          person_id:
+            person.id,
 
-            image_path:
-              fileName
+          image_path:
+            fileName
 
-          });
+        });
 
 
       if (dbError) {
-
-        /*
-          DB保存失敗時はStorage画像を削除
-        */
 
         await supabaseClient
           .storage
@@ -2590,7 +3671,6 @@ async function saveCrop() {
           .remove([
             fileName
           ]);
-
 
         throw dbError;
 
@@ -2605,7 +3685,10 @@ async function saveCrop() {
     =========================
     */
 
-    else {
+    else if (
+      cropState.mode ===
+      "existing"
+    ) {
 
       const oldImage =
         cropState.image;
@@ -2621,22 +3704,22 @@ async function saveCrop() {
         error:
           uploadError
       } =
-        await supabaseClient
-          .storage
-          .from("images")
-          .upload(
-            newFileName,
-            blob,
-            {
+      await supabaseClient
+        .storage
+        .from("images")
+        .upload(
+          newFileName,
+          blob,
+          {
 
-              contentType:
-                "image/jpeg",
+            contentType:
+              "image/jpeg",
 
-              upsert:
-                false
+            upsert:
+              false
 
-            }
-          );
+          }
+        );
 
 
       if (uploadError) {
@@ -2646,26 +3729,22 @@ async function saveCrop() {
       }
 
 
-      /*
-      DBの画像パスを更新
-      */
-
       const {
         error:
           updateError
       } =
-        await supabaseClient
-          .from("person_images")
-          .update({
+      await supabaseClient
+        .from("person_images")
+        .update({
 
-            image_path:
-              newFileName
+          image_path:
+            newFileName
 
-          })
-          .eq(
-            "id",
-            oldImage.id
-          );
+        })
+        .eq(
+          "id",
+          oldImage.id
+        );
 
 
       if (updateError) {
@@ -2682,20 +3761,16 @@ async function saveCrop() {
       }
 
 
-      /*
-      古いStorage画像削除
-      */
-
       const {
         error:
           oldDeleteError
       } =
-        await supabaseClient
-          .storage
-          .from("images")
-          .remove([
-            oldImage.path
-          ]);
+      await supabaseClient
+        .storage
+        .from("images")
+        .remove([
+          oldImage.path
+        ]);
 
 
       if (oldDeleteError) {
@@ -2763,12 +3838,12 @@ async function deleteImage(image) {
     error:
       storageError
   } =
-    await supabaseClient
-      .storage
-      .from("images")
-      .remove([
-        image.path
-      ]);
+  await supabaseClient
+    .storage
+    .from("images")
+    .remove([
+      image.path
+    ]);
 
 
   if (storageError) {
@@ -2787,13 +3862,13 @@ async function deleteImage(image) {
     error:
       dbError
   } =
-    await supabaseClient
-      .from("person_images")
-      .delete()
-      .eq(
-        "id",
-        image.id
-      );
+  await supabaseClient
+    .from("person_images")
+    .delete()
+    .eq(
+      "id",
+      image.id
+    );
 
 
   if (dbError) {
@@ -2857,6 +3932,38 @@ function shuffle(array) {
 ========================================================= */
 
 function startGame() {
+
+  /*
+    未切り抜き画像が残っている場合
+  */
+
+  const pendingCount =
+    Object.values(
+      pendingImages
+    ).reduce(
+      (
+        total,
+        images
+      ) =>
+        total +
+        images.length,
+      0
+    );
+
+
+  if (
+    pendingCount > 0
+  ) {
+
+    alert(
+      "まだ切り抜いていない画像があります。\n\n" +
+      "ゲームを開始する前に、画像の「✂️ 切り抜き」を完了してください。"
+    );
+
+    return;
+
+  }
+
 
   const usablePeople =
     people.filter(
@@ -3276,7 +4383,7 @@ function backToEditor() {
 
 
 /* =========================================================
-   Enterキーでも人物追加
+   Enterキー
 ========================================================= */
 
 document
@@ -3297,6 +4404,36 @@ document
 
     }
   );
+
+
+/* =========================================================
+   ウィンドウサイズ変更
+========================================================= */
+
+window.addEventListener(
+  "resize",
+  function() {
+
+    if (
+      document
+        .getElementById(
+          "cropModal"
+        )
+        .style.display !==
+      "none"
+    ) {
+
+      /*
+        モーダル表示中は、
+        画像が画面外に飛ばないよう補正。
+      */
+
+      constrainCropSquare();
+
+    }
+
+  }
+);
 
 </script>
 
