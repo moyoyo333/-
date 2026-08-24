@@ -63,18 +63,17 @@
       opacity: 0.8;
     }
 
-    .person {
-      border: 2px solid #ddd;
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 10px;
-    }
+    
 
-    .person-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .person {
+  background: white;
+  border: none;
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+
 
     .image-list {
       display: flex;
@@ -110,20 +109,44 @@
       gap: 10px;
     }
 
-    .card {
-      aspect-ratio: 1 / 1;
-      border-radius: 10px;
-      background: #4169e1;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
+   .card {
+  aspect-ratio: 1/1;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    #4169e1,
+    #7b68ee
+  );
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  transition: all .3s;
+}
+
+.card:hover{
+  transform:translateY(-4px);
+}
 
     .card img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
+.card::before{
+  content:"🃏";
+  position:absolute;
+  color:white;
+  font-size:36px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+.card.revealed::before{
+  display:none;
+}
+
 
     .hidden-image {
       display: none;
@@ -133,6 +156,21 @@
       opacity: 0.4;
       pointer-events: none;
     }
+    .stats{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-top:10px;
+}
+
+.stat-box{
+  background:white;
+  padding:12px 20px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+  text-align:center;
+}
+
 
     #game {
       display: none;
@@ -166,6 +204,18 @@
   <h1>人物でそろえる神経衰弱</h1>
   <p>画像が違っても同じ人物ならペア！</p>
 </header>
+<div class="stats">
+  <div class="stat-box">
+    <span id="personCount">0</span>
+    <small>人物数</small>
+  </div>
+
+  <div class="stat-box">
+    <span id="imageCount">0</span>
+    <small>画像数</small>
+  </div>
+</div>
+
 
 <div class="container">
 
@@ -187,6 +237,19 @@
 
     <div id="personList"></div>
 
+<h2>人物を追加</h2>
+
+<input
+  type="text"
+  id="personName"
+  placeholder="人物名を入力"
+>
+
+<button onclick="addPerson()">
+  人物を追加
+</button>
+
+
     <br>
 
     <button onclick="startGame()">
@@ -206,20 +269,54 @@
 
     <h2>神経衰弱</h2>
 
-    <p id="status"></p>
+    <div class="game-stats">
 
-    <div id="board" class="card-board"></div>
+  <div class="stat-card">
 
-    <div id="message"></div>
+    <span id="remainingDisplay">
+      0
+    </span>
+
+    <small>残り組数</small>
+
+  </div>
+
+  <div class="stat-card">
+
+    <span id="movesDisplay">
+      0
+    </span>
+
+    <small>挑戦回数</small>
 
   </div>
 
 </div>
 
 
+    <div id="board" class="card-board"></div>
+
+    <div id="message"></div>
+
+  </div>
+  
+</div>
+
 <script>
 
 let people = [];
+const saved =
+  localStorage.getItem(
+    "people"
+  );
+
+if (saved) {
+
+  people =
+    JSON.parse(saved);
+
+}
+
 
 /*
 people のデータ例
@@ -235,6 +332,7 @@ people のデータ例
 ]
 
 */
+
 
 
 function addPerson() {
@@ -266,8 +364,10 @@ function addPerson() {
 
   nameInput.value = "";
 
+saveData();
 
-  renderPeople();
+renderPeople();
+
 
 }
 
@@ -332,12 +432,14 @@ function renderPeople() {
       function () {
 
         people.splice(
-          personIndex,
-          1
-        );
+  personIndex,
+  1
+);
 
+saveData();
 
-        renderPeople();
+renderPeople();
+
 
       };
 
@@ -394,7 +496,7 @@ function renderPeople() {
                 e.target.result
               );
 
-
+saveData();
               renderPeople();
 
             };
@@ -473,7 +575,7 @@ function renderPeople() {
               1
             );
 
-
+saveData();
             renderPeople();
 
           };
@@ -746,19 +848,21 @@ function startGame() {
 function updateStatus() {
 
   document
-    .getElementById("status")
+    .getElementById(
+      "remainingDisplay"
+    )
     .textContent =
-      "残り "
-      +
-      remainingPairs
-      +
-      "組　｜　"
-      +
-      "挑戦回数 "
-      +
+      remainingPairs;
+
+  document
+    .getElementById(
+      "movesDisplay"
+    )
+    .textContent =
       moves;
 
 }
+
 
 
 
@@ -790,6 +894,10 @@ function flipCard(card) {
   img.classList.remove(
     "hidden-image"
   );
+  card.classList.add(
+  "revealed"
+);
+
 
 
   selectedCards.push(
@@ -865,32 +973,65 @@ function checkPair() {
 
 
     if (
-      remainingPairs === 0
-    ) {
+  remainingPairs === 0
+) {
 
-      document
-        .getElementById("message")
-        .textContent =
-          "🎉 クリア！";
+  document
+    .getElementById("message")
+    .innerHTML =
+  `
+    <div class="clear-box">
 
-    }
+      <h2>
+        🎉 GAME CLEAR
+      </h2>
+
+      <p>
+        ${moves}手でクリア
+      </p>
+
+      <button
+        onclick="startGame()"
+      >
+        もう一度
+      </button>
+
+      <button
+        onclick="backToEditor()"
+      >
+        編集画面へ
+      </button>
+
+    </div>
+  `;
+
+}
+
 
   }
 
   else {
 
     card1
-      .querySelector("img")
-      .classList.add(
-        "hidden-image"
-      );
+  .querySelector("img")
+  .classList.add(
+    "hidden-image"
+  );
 
+card2
+  .querySelector("img")
+  .classList.add(
+    "hidden-image"
+  );
 
-    card2
-      .querySelector("img")
-      .classList.add(
-        "hidden-image"
-      );
+card1.classList.remove(
+  "revealed"
+);
+
+card2.classList.remove(
+  "revealed"
+);
+
 
   }
 
@@ -928,6 +1069,19 @@ function backToEditor() {
       "";
 
 }
+
+function saveData() {
+
+  localStorage.setItem(
+    "people",
+    JSON.stringify(
+      people
+    )
+  );
+
+}
+renderPeople();
+
 
 </script>
 
