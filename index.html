@@ -859,7 +859,99 @@ input[type="file"] {
   </button>
 
 </div>
+<script>
+(function () {
 
+  const startButton =
+    document.getElementById("startButton");
+
+  const startScreen =
+    document.getElementById("startScreen");
+
+  if (!startButton || !startScreen) {
+    return;
+  }
+
+  startButton.addEventListener(
+    "click",
+    async function () {
+
+      console.log("START BUTTON CLICK");
+
+      startButton.disabled = true;
+      startButton.textContent = "読み込み中...";
+
+      /*
+        まず画面を確実に消す
+      */
+      startScreen.style.display = "none";
+
+      /*
+        メインJavaScriptが読み込まれるまで少し待つ
+      */
+      setTimeout(async function () {
+
+        try {
+
+          if (
+            typeof window.loadPeople !==
+            "function"
+          ) {
+
+            throw new Error(
+              "loadPeople() が読み込まれていません。\n" +
+              "JavaScriptの途中でエラーが発生している可能性があります。"
+            );
+
+          }
+
+          await window.loadPeople();
+
+        }
+
+        catch (error) {
+
+          console.error(error);
+
+          const errorBox =
+            document.getElementById(
+              "errorBox"
+            );
+
+          if (errorBox) {
+
+            errorBox.style.display =
+              "block";
+
+            errorBox.textContent =
+              "開始時エラー\n\n" +
+              error.message;
+
+          }
+
+          /*
+            エラー時には開始画面を戻す
+          */
+
+          startScreen.style.display =
+            "flex";
+
+          startButton.disabled =
+            false;
+
+          startButton.textContent =
+            "🎮 始める";
+
+        }
+
+      }, 0);
+
+    }
+
+  );
+
+})();
+</script>
 
 <!-- =========================================================
      エラー表示
@@ -1269,37 +1361,13 @@ window.addEventListener(
 
 async function enterSite() {
 
-  const startButton =
-    document.getElementById(
-      "startButton"
-    );
-
-  if (startButton) {
-
-    startButton.disabled =
-      true;
-
-    startButton.textContent =
-      "読み込み中...";
-
-  }
-
-
   try {
 
     await loadPeople();
 
-
-    document
-      .getElementById(
-        "startScreen"
-      )
-      .style.display =
-      "none";
-
   }
 
-  catch(error) {
+  catch (error) {
 
     console.error(error);
 
@@ -1308,16 +1376,7 @@ async function enterSite() {
       error.message
     );
 
-
-    if (startButton) {
-
-      startButton.disabled =
-        false;
-
-      startButton.textContent =
-        "🎮 始める";
-
-    }
+    throw error;
 
   }
 
@@ -4570,15 +4629,6 @@ function backToEditor() {
 /* =========================================================
    イベント登録
 ========================================================= */
-
-document
-  .getElementById(
-    "startButton"
-  )
-  .addEventListener(
-    "click",
-    enterSite
-  );
 
 
 document
