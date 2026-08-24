@@ -1462,15 +1462,10 @@ async function loadPeople() {
                     );
 
 
-                return {
+            return {
   id: image.id,
   path: image.image_path,
-  url:
-  data.publicUrl +
-  "?v=" +
-  encodeURIComponent(
-    image.image_path
-  )
+  url: data.publicUrl
 };
 
               }
@@ -2656,7 +2651,6 @@ async function openCropForNewImage(
 /* =========================================================
    既存画像を切り抜き
 ========================================================= */
-
 async function openCropForExistingImage(
   person,
   image
@@ -2664,19 +2658,23 @@ async function openCropForExistingImage(
 
   try {
 
-    /*
-      現在の表示画像ではなく、
-      Supabaseに保存されている画像を元にする。
-    */
+    const {
+      data
+    } =
+    supabaseClient
+      .storage
+      .from("images")
+      .getPublicUrl(
+        image.path
+      );
 
     const imageUrl =
-      image.url;
-
+      data.publicUrl;
 
     if (!imageUrl) {
 
       throw new Error(
-        "画像URLがありません"
+        "画像URLを取得できませんでした。"
       );
 
     }
@@ -2686,8 +2684,7 @@ async function openCropForExistingImage(
       await fetch(
         imageUrl,
         {
-          cache:
-            "no-cache"
+          cache: "no-store"
         }
       );
 
@@ -2695,7 +2692,9 @@ async function openCropForExistingImage(
     if (!response.ok) {
 
       throw new Error(
-        "画像を取得できませんでした。"
+        "画像を取得できませんでした。\n" +
+        "HTTPステータス: " +
+        response.status
       );
 
     }
