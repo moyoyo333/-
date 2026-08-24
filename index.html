@@ -1,578 +1,661 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>人物でそろえる神経衰弱 TEST123</title>
+<title>人物でそろえる神経衰弱</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    /* =========================
-       基本設定
-    ========================= */
+<style>
 
-    * {
-      box-sizing: border-box;
-    }
+/* =========================
+   基本
+========================= */
 
-    body {
-      margin: 0;
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Helvetica Neue",
-        Arial,
-        "Noto Sans JP",
-        sans-serif;
+* {
+  box-sizing: border-box;
+}
 
-      background:
-        linear-gradient(
-          135deg,
-          #eef2ff,
-          #f8f9ff
-        );
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans JP",
+    sans-serif;
 
-      color: #222;
-      min-height: 100vh;
-    }
+  background:
+    linear-gradient(135deg,#eef2ff,#f8f9ff);
 
+  color: #222;
+  min-height: 100vh;
+}
 
-    /* =========================
-       ヘッダー
-    ========================= */
 
-    header {
-      text-align: center;
-      padding: 30px 20px 25px;
+/* =========================
+   開始画面
+========================= */
 
-      background:
-        linear-gradient(
-          135deg,
-          #4169e1,
-          #7b68ee
-        );
+#startScreen {
+  position: fixed;
+  inset: 0;
 
-      color: white;
+  background:
+    linear-gradient(135deg,#4169e1,#7b68ee);
 
-      box-shadow:
-        0 4px 15px
-        rgba(0,0,0,.12);
-    }
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-    }
+  z-index: 9999;
+}
 
-    header p {
-      margin: 0;
-      opacity: .9;
-    }
+.start-button {
+  font-size: 22px;
+  padding: 18px 45px;
 
+  border-radius: 15px;
 
-    /* =========================
-       全体コンテナ
-    ========================= */
+  border: none;
 
-    .container {
-      width: min(95%, 1000px);
-      margin: 25px auto 50px;
-    }
+  color: white;
 
+  background: white;
+  color: #4169e1;
 
-    /* =========================
-       パネル
-    ========================= */
+  font-weight: bold;
 
-    .panel {
-      background: white;
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.2);
+}
 
-      padding: 24px;
 
-      border-radius: 20px;
+/* =========================
+   ヘッダー
+========================= */
 
-      box-shadow:
-        0 8px 30px
-        rgba(0,0,0,.08);
+header {
+  text-align: center;
 
-      margin-bottom: 20px;
-    }
+  padding: 30px 20px 25px;
 
-    h2 {
-      margin-top: 0;
-    }
+  background:
+    linear-gradient(135deg,#4169e1,#7b68ee);
 
+  color: white;
 
-    /* =========================
-       統計
-    ========================= */
+  box-shadow:
+    0 4px 15px rgba(0,0,0,.12);
+}
 
-    .stats,
-    .game-stats {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
 
-      flex-wrap: wrap;
+header p {
+  margin: 0;
+  opacity: .9;
+}
 
-      margin: 20px auto;
 
-      padding: 0 15px;
-    }
+/* =========================
+   統計
+========================= */
 
-    .stat-box,
-    .stat-card {
-      background: white;
+.stats,
+.game-stats {
+  display: flex;
 
-      min-width: 130px;
+  justify-content: center;
 
-      padding: 15px 20px;
+  gap: 15px;
 
-      border-radius: 16px;
+  flex-wrap: wrap;
 
-      text-align: center;
+  margin: 20px auto;
 
-      box-shadow:
-        0 5px 20px
-        rgba(0,0,0,.08);
+  padding: 0 15px;
+}
 
-      transition: transform .2s;
-    }
+.stat-box,
+.stat-card {
+  background: white;
 
-    .stat-box:hover,
-    .stat-card:hover {
-      transform: translateY(-3px);
-    }
+  min-width: 130px;
 
-    .stat-box span,
-    .stat-card span {
-      display: block;
+  padding: 15px 20px;
 
-      font-size: 28px;
-      font-weight: bold;
+  border-radius: 16px;
 
-      color: #4169e1;
-    }
+  text-align: center;
 
-    small {
-      color: #666;
-    }
+  box-shadow:
+    0 5px 20px rgba(0,0,0,.08);
+}
 
+.stat-box span,
+.stat-card span {
+  display: block;
 
-    /* =========================
-       入力欄
-    ========================= */
+  font-size: 28px;
 
-    input[type="text"] {
-      width: min(300px, 100%);
+  font-weight: bold;
 
-      padding: 12px 14px;
+  color: #4169e1;
+}
 
-      font-size: 16px;
+small {
+  color: #666;
+}
 
-      border: 2px solid #ddd;
 
-      border-radius: 10px;
+/* =========================
+   コンテナ
+========================= */
 
-      outline: none;
+.container {
+  width: min(95%,1000px);
 
-      transition: border .2s;
-    }
+  margin: 25px auto 50px;
+}
 
-    input[type="text"]:focus {
-      border-color: #4169e1;
-    }
 
-    input[type="file"] {
-      margin-top: 10px;
-      max-width: 100%;
-    }
+/* =========================
+   パネル
+========================= */
 
+.panel {
+  background: white;
 
-    /* =========================
-       ボタン
-    ========================= */
+  padding: 24px;
 
-    button {
-      padding: 11px 18px;
+  border-radius: 20px;
 
-      margin: 5px;
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.08);
 
-      border: none;
+  margin-bottom: 20px;
+}
 
-      border-radius: 10px;
+h2 {
+  margin-top: 0;
+}
 
-      background:
-        linear-gradient(
-          135deg,
-          #4169e1,
-          #6a5acd
-        );
 
-      color: white;
+/* =========================
+   入力
+========================= */
 
-      font-size: 15px;
-      font-weight: bold;
+input[type="text"] {
 
-      cursor: pointer;
+  width: min(300px,100%);
 
-      transition:
-        transform .2s,
-        opacity .2s,
-        box-shadow .2s;
+  padding: 12px 14px;
 
-      box-shadow:
-        0 4px 10px
-        rgba(65,105,225,.25);
-    }
+  font-size: 16px;
 
-    button:hover {
-      transform: translateY(-2px);
-      opacity: .9;
-    }
+  border: 2px solid #ddd;
 
-    button:active {
-      transform: scale(.97);
-    }
+  border-radius: 10px;
 
+  outline: none;
+}
 
-    /* =========================
-       人物カード
-    ========================= */
+input[type="text"]:focus {
+  border-color: #4169e1;
+}
 
-    .person {
-      background: #fff;
+input[type="file"] {
+  margin-top: 10px;
+  max-width: 100%;
+}
 
-      border: 1px solid #eee;
 
-      border-radius: 18px;
+/* =========================
+   ボタン
+========================= */
 
-      padding: 18px;
+button {
 
-      margin-top: 18px;
+  padding: 11px 18px;
 
-      box-shadow:
-        0 4px 15px
-        rgba(0,0,0,.07);
-    }
+  margin: 5px;
 
-    .person-header {
-      display: flex;
+  border: none;
 
-      justify-content: space-between;
+  border-radius: 10px;
 
-      align-items: center;
+  background:
+    linear-gradient(135deg,#4169e1,#6a5acd);
 
-      gap: 10px;
+  color: white;
 
-      flex-wrap: wrap;
-    }
+  font-size: 15px;
 
-    .person-header h3 {
-      margin: 0;
-    }
+  font-weight: bold;
 
+  cursor: pointer;
 
-    /* =========================
-       画像一覧
-    ========================= */
+  box-shadow:
+    0 4px 10px rgba(65,105,225,.25);
+}
 
-    .image-list {
-      display: flex;
+button:active {
+  transform: scale(.97);
+}
 
-      flex-wrap: wrap;
 
-      gap: 12px;
+/* =========================
+   人物
+========================= */
 
-      margin-top: 15px;
-    }
+.person {
 
-    .image-box {
-      position: relative;
+  background: #fff;
 
-      width: 110px;
-      height: 110px;
-    }
+  border: 1px solid #eee;
 
-    .image-box img {
-      width: 100%;
-      height: 100%;
+  border-radius: 18px;
 
-      object-fit: cover;
+  padding: 18px;
 
-      border-radius: 12px;
+  margin-top: 18px;
 
-      box-shadow:
-        0 3px 10px
-        rgba(0,0,0,.15);
-    }
+  box-shadow:
+    0 4px 15px rgba(0,0,0,.07);
+}
 
-    .delete-image {
-      position: absolute;
+.person-header {
 
-      top: -8px;
-      right: -8px;
+  display: flex;
 
-      width: 30px;
-      height: 30px;
+  justify-content: space-between;
 
-      padding: 0;
-      margin: 0;
+  align-items: center;
 
-      border-radius: 50%;
+  gap: 10px;
 
-      background: #e53935;
+  flex-wrap: wrap;
+}
 
-      display: flex;
+.person-header h3 {
+  margin: 0;
+}
 
-      justify-content: center;
-      align-items: center;
 
-      font-size: 18px;
+/* =========================
+   画像一覧
+========================= */
 
-      box-shadow:
-        0 3px 8px
-        rgba(0,0,0,.2);
-    }
+.image-list {
 
+  display: flex;
 
-    /* =========================
-       ゲーム盤面
-    ========================= */
+  flex-wrap: wrap;
 
-    .card-board {
-      display: grid;
+  gap: 12px;
 
-      grid-template-columns:
-        repeat(
-          auto-fit,
-          minmax(100px, 1fr)
-        );
+  margin-top: 15px;
+}
 
-      gap: 12px;
+.image-box {
 
-      margin-top: 20px;
-    }
+  position: relative;
 
-    .card {
-      position: relative;
+  width: 110px;
+  height: 110px;
 
-      aspect-ratio: 1 / 1;
+  cursor: pointer;
+}
 
-      border-radius: 16px;
+.image-box img {
 
-      background:
-        linear-gradient(
-          135deg,
-          #4169e1,
-          #7b68ee
-        );
+  width: 100%;
+  height: 100%;
 
-      cursor: pointer;
+  object-fit: cover;
 
-      overflow: hidden;
+  border-radius: 12px;
 
-      box-shadow:
-        0 5px 15px
-        rgba(0,0,0,.15);
+  box-shadow:
+    0 3px 10px rgba(0,0,0,.15);
+}
 
-      transition:
-        transform .25s,
-        box-shadow .25s;
-    }
+.image-box::after {
 
-    .card:hover {
-      transform: translateY(-4px);
+  content: "✂️";
 
-      box-shadow:
-        0 8px 20px
-        rgba(0,0,0,.2);
-    }
+  position: absolute;
 
+  bottom: 5px;
+  left: 5px;
 
-    /* カード裏面 */
+  background: rgba(0,0,0,.65);
 
-    .card::before {
-      content: "🃏";
+  color: white;
 
-      position: absolute;
+  padding: 3px 6px;
 
-      top: 50%;
-      left: 50%;
+  border-radius: 6px;
 
-      transform:
-        translate(-50%, -50%);
+  font-size: 12px;
+}
 
-      color: white;
+.delete-image {
 
-      font-size: clamp(28px, 6vw, 45px);
+  position: absolute;
 
-      z-index: 2;
-    }
+  top: -8px;
+  right: -8px;
 
-    .card.revealed::before {
-      display: none;
-    }
+  width: 30px;
+  height: 30px;
 
+  padding: 0;
+  margin: 0;
 
-    /* カード画像 */
+  border-radius: 50%;
 
-    .card img {
-      width: 100%;
-      height: 100%;
+  background: #e53935;
 
-      object-fit: cover;
+  display: flex;
 
-      display: block;
-    }
+  justify-content: center;
+  align-items: center;
 
-    .hidden-image {
-      display: none !important;
-    }
+  font-size: 18px;
 
+  z-index: 5;
+}
 
-    /* 揃ったカード */
 
-    .completed {
-      opacity: .45;
+/* =========================
+   ゲーム
+========================= */
 
-      pointer-events: none;
+.card-board {
 
-      transform: scale(.96);
-    }
+  display: grid;
 
+  grid-template-columns:
+    repeat(auto-fit,minmax(100px,1fr));
 
-    /* =========================
-       クリア画面
-    ========================= */
+  gap: 12px;
 
-    #message {
-      text-align: center;
+  margin-top: 20px;
+}
 
-      font-size: 20px;
+.card {
 
-      margin-top: 25px;
-    }
+  position: relative;
 
-    .clear-box {
-      background:
-        linear-gradient(
-          135deg,
-          #fff,
-          #f3f1ff
-        );
+  aspect-ratio: 1 / 1;
 
-      padding: 25px;
+  border-radius: 16px;
 
-      border-radius: 20px;
+  background:
+    linear-gradient(135deg,#4169e1,#7b68ee);
 
-      box-shadow:
-        0 8px 25px
-        rgba(0,0,0,.1);
+  cursor: pointer;
 
-      animation: popup .4s ease;
-    }
+  overflow: hidden;
 
-    @keyframes popup {
+  box-shadow:
+    0 5px 15px rgba(0,0,0,.15);
+}
 
-      from {
-        opacity: 0;
-        transform: scale(.9);
-      }
+.card::before {
 
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+  content: "🃏";
 
-    }
+  position: absolute;
 
+  top: 50%;
+  left: 50%;
 
-    /* =========================
-       スマホ
-    ========================= */
+  transform:
+    translate(-50%,-50%);
 
-    @media (max-width: 600px) {
+  color: white;
 
-      header {
-        padding: 22px 15px;
-      }
+  font-size: clamp(28px,6vw,45px);
 
-      h1 {
-        font-size: 22px;
-      }
+  z-index: 2;
+}
 
-      .panel {
-        padding: 16px;
-      }
+.card.revealed::before {
+  display: none;
+}
 
-      .card-board {
-        grid-template-columns:
-          repeat(3, 1fr);
+.card img {
 
-        gap: 8px;
-      }
+  width: 100%;
+  height: 100%;
 
-      .card {
-        border-radius: 12px;
-      }
+  object-fit: cover;
 
-      .image-box {
-        width: 90px;
-        height: 90px;
-      }
+  display: block;
+}
 
-      .person-header {
-        flex-direction: column;
+.hidden-image {
+  display: none !important;
+}
 
-        align-items: flex-start;
-      }
+.completed {
 
-      .stats,
-      .game-stats {
-        gap: 10px;
-      }
+  opacity: .45;
 
-      .stat-box,
-      .stat-card {
-        min-width: 110px;
-      }
+  pointer-events: none;
 
-    }
+  transform: scale(.96);
+}
 
-  </style>
+
+/* =========================
+   メッセージ
+========================= */
+
+#message {
+
+  text-align: center;
+
+  font-size: 20px;
+
+  margin-top: 25px;
+}
+
+.clear-box {
+
+  background:
+    linear-gradient(135deg,#fff,#f3f1ff);
+
+  padding: 25px;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.1);
+}
+
+
+/* =========================
+   切り抜きモーダル
+========================= */
+
+#cropModal {
+
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(0,0,0,.75);
+
+  z-index: 10000;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 15px;
+}
+
+.crop-panel {
+
+  width: min(95vw,600px);
+
+  max-height: 95vh;
+
+  overflow: auto;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 20px;
+
+  text-align: center;
+}
+
+.crop-panel h2 {
+  margin-top: 0;
+}
+
+
+/* 切り抜きエリア */
+
+#cropArea {
+
+  position: relative;
+
+  width: min(90vw,500px);
+
+  height: min(90vw,500px);
+
+  margin: 15px auto;
+
+  overflow: hidden;
+
+  background: #111;
+
+  border-radius: 12px;
+
+  touch-action: none;
+
+  user-select: none;
+}
+
+#cropImage {
+
+  position: absolute;
+
+  max-width: none;
+
+  max-height: none;
+
+  user-select: none;
+
+  pointer-events: none;
+
+  transform-origin: top left;
+}
+
+
+/* 正方形ガイド */
+
+.crop-guide {
+
+  position: absolute;
+
+  inset: 0;
+
+  border: 3px solid white;
+
+  pointer-events: none;
+
+  box-shadow:
+    0 0 0 9999px rgba(0,0,0,.35);
+}
+
+
+/* =========================
+   スマホ
+========================= */
+
+@media(max-width:600px) {
+
+  header {
+    padding: 22px 15px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .card-board {
+    grid-template-columns:
+      repeat(3,1fr);
+
+    gap: 8px;
+  }
+
+  .image-box {
+    width: 90px;
+    height: 90px;
+  }
+
+  .person-header {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  #cropArea {
+
+    width: 90vw;
+    height: 90vw;
+  }
+
+}
+
+</style>
 </head>
 
 
 <body>
-<div id="startScreen" style="
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(135deg,#4169e1,#7b68ee);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-">
+
+
+<!-- =========================
+     開始画面
+========================= -->
+
+<div id="startScreen">
 
   <button
+    class="start-button"
     onclick="enterSite()"
-    style="
-      font-size: 22px;
-      padding: 18px 40px;
-      border-radius: 15px;
-    "
   >
     🎮 始める
   </button>
 
 </div>
+
+
 <header>
 
   <h1>
-    人物でそろえる神経衰弱テスト2
+    人物でそろえる神経衰弱
   </h1>
 
   <p>
@@ -582,15 +665,15 @@
 </header>
 
 
-<!-- 統計 -->
+<!-- =========================
+     統計
+========================= -->
 
 <div class="stats">
 
   <div class="stat-box">
 
-    <span id="personCount">
-      0
-    </span>
+    <span id="personCount">0</span>
 
     <small>
       人物数
@@ -601,9 +684,7 @@
 
   <div class="stat-box">
 
-    <span id="imageCount">
-      0
-    </span>
+    <span id="imageCount">0</span>
 
     <small>
       画像数
@@ -617,118 +698,151 @@
 <div class="container">
 
 
-  <!-- 編集画面 -->
-  <div
-    id="editor"
-    class="panel"
+<!-- =========================
+     編集
+========================= -->
+
+<div
+  id="editor"
+  class="panel"
+>
+
+  <h2>
+    人物を追加
+  </h2>
+
+  <input
+    type="text"
+    id="personName"
+    placeholder="人物名を入力"
   >
 
-    <h2>
-      人物を追加
-    </h2>
+  <button onclick="addPerson()">
+    人物を追加
+  </button>
 
 
-    <input
-      type="text"
-      id="personName"
-      placeholder="人物名を入力"
-    >
+  <div id="personList"></div>
 
 
-    <button onclick="addPerson()">
-
-      人物を追加
-
-    </button>
+  <br>
 
 
-    <div id="personList"></div>
-
-
-    <br>
-
-
-    <button onclick="startGame()">
-
-      🎮 ゲーム開始
-
-    </button>
-
-  </div>
-
-
-
-  <!-- ゲーム画面 -->
-
-  <div
-    id="game"
-    class="panel"
-    style="display:none"
-  >
-
-    <button onclick="backToEditor()">
-
-      ← 編集画面に戻る
-
-    </button>
-
-
-    <h2>
-      神経衰弱
-    </h2>
-
-
-    <div class="game-stats">
-
-      <div class="stat-card">
-
-        <span id="remainingDisplay">
-          0
-        </span>
-
-        <small>
-          残り組数
-        </small>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span id="movesDisplay">
-          0
-        </span>
-
-        <small>
-          挑戦回数
-        </small>
-
-      </div>
-
-    </div>
-
-
-    <div
-      id="board"
-      class="card-board"
-    ></div>
-
-
-    <div id="message"></div>
-
-  </div>
-
+  <button onclick="startGame()">
+    🎮 ゲーム開始
+  </button>
 
 </div>
 
 
+<!-- =========================
+     ゲーム
+========================= -->
+
+<div
+  id="game"
+  class="panel"
+  style="display:none"
+>
+
+  <button onclick="backToEditor()">
+    ← 編集画面に戻る
+  </button>
+
+  <h2>
+    神経衰弱
+  </h2>
+
+
+  <div class="game-stats">
+
+    <div class="stat-card">
+
+      <span id="remainingDisplay">
+        0
+      </span>
+
+      <small>
+        残り組数
+      </small>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span id="movesDisplay">
+        0
+      </span>
+
+      <small>
+        挑戦回数
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="board"
+    class="card-board"
+  ></div>
+
+
+  <div id="message"></div>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     切り抜きモーダル
+========================= -->
+
+<div id="cropModal">
+
+  <div class="crop-panel">
+
+    <h2>
+      ✂️ 画像を切り抜く
+    </h2>
+
+    <p>
+      画像をドラッグして位置を調整してください
+    </p>
+
+
+    <div id="cropArea">
+
+      <img
+        id="cropImage"
+        draggable="false"
+      >
+
+      <div class="crop-guide"></div>
+
+    </div>
+
+
+    <button onclick="cancelCrop()">
+      キャンセル
+    </button>
+
+    <button onclick="confirmCrop()">
+      この位置で決定
+    </button>
+
+  </div>
+
+</div>
+
 
 <script>
+
 /* =========================
-   Supabase設定
-========================= */
-/* =========================
-   Supabase設定
+   Supabase
 ========================= */
 
 const SUPABASE_URL =
@@ -761,139 +875,41 @@ let moves = 0;
 
 
 /* =========================
-   画像圧縮
+   切り抜き用
 ========================= */
 
-async function compressImage(file) {
+let cropFile = null;
 
-  return new Promise((resolve) => {
+let cropImageObject = null;
 
-    const reader =
-      new FileReader();
+let cropScale = 1;
 
-    reader.onload =
-      function(event) {
+let cropX = 0;
 
-        const img =
-          new Image();
+let cropY = 0;
 
-        img.onload =
-          function() {
+let dragging = false;
 
-            const canvas =
-              document.createElement("canvas");
+let dragStartX = 0;
 
-            const maxWidth = 800;
+let dragStartY = 0;
 
-            let width =
-              img.width;
+let startCropX = 0;
 
-            let height =
-              img.height;
-
-
-            if (
-              width > maxWidth
-            ) {
-
-              height =
-                height *
-                maxWidth /
-                width;
-
-              width =
-                maxWidth;
-
-            }
-
-
-            canvas.width =
-              width;
-
-            canvas.height =
-              height;
-
-
-            const ctx =
-              canvas.getContext("2d");
-
-
-            ctx.drawImage(
-              img,
-              0,
-              0,
-              width,
-              height
-            );
-
-
-            canvas.toBlob(
-              function(blob) {
-
-                resolve(blob);
-
-              },
-              "image/jpeg",
-              0.7
-            );
-
-          };
-
-
-        img.src =
-          event.target.result;
-
-      };
-
-
-    reader.readAsDataURL(file);
-
-  });
-
-}
+let startCropY = 0;
 
 
 /* =========================
-   人物・画像数更新
+   サイト開始
 ========================= */
 
-function updateCounts() {
-
-  const personCount =
-    people.length;
-
-
-  const imageCount =
-    people.reduce(
-      (
-        total,
-        person
-      ) => {
-
-        return (
-          total +
-          person.images.length
-        );
-
-      },
-      0
-    );
-
+async function enterSite() {
 
   document
-    .getElementById(
-      "personCount"
-    )
-    .textContent =
-    personCount;
+    .getElementById("startScreen")
+    .style.display = "none";
 
-
-  document
-    .getElementById(
-      "imageCount"
-    )
-    .textContent =
-    imageCount;
+  await loadPeople();
 
 }
 
@@ -911,30 +927,22 @@ async function loadPeople() {
     await supabaseClient
       .from("people")
       .select("*")
-      .order(
-        "id",
-        {
-          ascending: true
-        }
-      );
+      .order("id",{ascending:true});
 
 
   if (peopleError) {
 
-    console.error(
-      peopleError
-    );
+    console.error(peopleError);
 
     alert(
-      "人物データの読み込みに失敗しました"
+      "人物データの読み込みに失敗しました\n" +
+      peopleError.message
     );
 
     return;
 
   }
 
-
-  /* 画像も取得 */
 
   const {
     data: imageData,
@@ -947,12 +955,11 @@ async function loadPeople() {
 
   if (imageError) {
 
-    console.error(
-      imageError
-    );
+    console.error(imageError);
 
     alert(
-      "画像データの読み込みに失敗しました"
+      "画像データの読み込みに失敗しました\n" +
+      imageError.message
     );
 
     return;
@@ -961,58 +968,49 @@ async function loadPeople() {
 
 
   people =
-    peopleData.map(
-      person => {
+    peopleData.map(person => {
 
-        const images =
-          imageData
-            .filter(
-              image =>
-                image.person_id ===
-                person.id
-            )
-            .map(
-              image => {
+      const images =
+        imageData
+          .filter(image =>
+            image.person_id === person.id
+          )
+          .map(image => {
 
-                const {
-                  data
-                } =
-                  supabaseClient
-                    .storage
-                    .from("images")
-                    .getPublicUrl(
-                      image.image_path
-                    );
+            const {data} =
+              supabaseClient
+                .storage
+                .from("images")
+                .getPublicUrl(
+                  image.image_path
+                );
 
 
-                return {
+            return {
 
-                  id:
-                    image.id,
+              id:
+                image.id,
 
-                  path:
-                    image.image_path,
+              path:
+                image.image_path,
 
-                  url:
-                    data.publicUrl
+              url:
+                data.publicUrl
 
-                };
+            };
 
-              }
-            );
+          });
 
 
-        return {
+      return {
 
-          ...person,
+        ...person,
 
-          images:
-            images
+        images
 
-        };
+      };
 
-      }
-    );
+    });
 
 
   renderPeople();
@@ -1026,51 +1024,40 @@ async function loadPeople() {
 
 async function addPerson() {
 
-  const nameInput =
-    document.getElementById(
-      "personName"
-    );
-
+  const input =
+    document.getElementById("personName");
 
   const name =
-    nameInput.value.trim();
+    input.value.trim();
 
 
-  if (
-    name === ""
-  ) {
+  if (!name) {
 
-    alert(
-      "人物名を入力してください"
-    );
+    alert("人物名を入力してください");
 
     return;
 
   }
 
 
-  const { error } =
+  const {error} =
     await supabaseClient
       .from("people")
       .insert({
-        name: name
+        name:name
       });
 
 
   if (error) {
 
-    alert(
-      error.message
-    );
+    alert(error.message);
 
     return;
 
   }
 
 
-  nameInput.value =
-    "";
-
+  input.value = "";
 
   await loadPeople();
 
@@ -1081,71 +1068,41 @@ async function addPerson() {
    人物削除
 ========================= */
 
-async function deletePerson(
-  person
-) {
-
-  const ok =
-    confirm(
-      `「${person.name}」と画像を削除しますか？`
-    );
-
-
-  if (!ok) return;
-
-
-  /* Storageの画像を削除 */
-
-  const imagePaths =
-    person.images.map(
-      image =>
-        image.path
-    );
-
+async function deletePerson(person) {
 
   if (
-    imagePaths.length > 0
-  ) {
-
-    const {
-      error: storageError
-    } =
-      await supabaseClient
-        .storage
-        .from("images")
-        .remove(
-          imagePaths
-        );
+    !confirm(
+      `「${person.name}」と画像を削除しますか？`
+    )
+  ) return;
 
 
-    if (storageError) {
+  const paths =
+    person.images.map(
+      image => image.path
+    );
 
-      console.error(
-        storageError
-      );
 
-    }
+  if (paths.length) {
+
+    await supabaseClient
+      .storage
+      .from("images")
+      .remove(paths);
 
   }
 
 
-  /* Databaseから人物削除 */
-
-  const { error } =
+  const {error} =
     await supabaseClient
       .from("people")
       .delete()
-      .eq(
-        "id",
-        person.id
-      );
+      .eq("id",person.id);
 
 
   if (error) {
 
-    alert(
-      error.message
-    );
+    alert(error.message);
 
     return;
 
@@ -1158,125 +1115,570 @@ async function deletePerson(
 
 
 /* =========================
-   画像アップロード
+   画像選択
 ========================= */
 
-async function uploadImages(
-  person,
-  files
-) {
+function selectImage(person,files) {
 
-  for (
-    const file
-    of files
-  ) {
-
-    try {
-
-      /*
-      画像圧縮
-      */
-
-      const compressedBlob =
-        await compressImage(
-          file
-        );
+  if (!files || !files.length)
+    return;
 
 
-      /*
-      ファイル名作成
-      */
+  cropFile = files[0];
 
-      const fileName =
-        `${person.id}/${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2)}.jpg`;
+  cropImageObject = null;
+
+  const reader =
+    new FileReader();
 
 
-      /*
-      Storageに保存
-      */
+  reader.onload = function(e) {
 
-      const {
-        error: uploadError
-      } =
-        await supabaseClient
-          .storage
-          .from("images")
-          .upload(
-            fileName,
-            compressedBlob,
-            {
-              contentType:
-                "image/jpeg"
-            }
-          );
+    const img =
+      new Image();
 
 
-      if (uploadError) {
+    img.onload = function() {
 
-        console.error(
-          uploadError
-        );
+      cropImageObject = img;
 
-        alert(
-          "画像のアップロードに失敗しました"
-        );
+      setupCrop();
 
-        continue;
-
-      }
+    };
 
 
-      /*
-      Databaseに画像情報を保存
-      */
+    img.src = e.target.result;
 
-      const {
-        error: dbError
-      } =
-        await supabaseClient
-          .from("person_images")
-          .insert({
-
-            person_id:
-              person.id,
-
-            image_path:
-              fileName
-
-          });
+  };
 
 
-      if (dbError) {
+  reader.readAsDataURL(cropFile);
 
-        console.error(
-          dbError
-        );
+}
 
-        alert(
-          "画像情報の保存に失敗しました"
-        );
 
-      }
+/* =========================
+   切り抜き準備
+========================= */
 
-    }
+function setupCrop() {
 
-    catch (
-      error
-    ) {
+  const area =
+    document.getElementById("cropArea");
 
-      console.error(
-        error
-      );
+  const img =
+    document.getElementById("cropImage");
 
-      alert(
-        "画像処理中にエラーが発生しました"
-      );
 
-    }
+  const size =
+    area.clientWidth;
+
+
+  const iw =
+    cropImageObject.width;
+
+  const ih =
+    cropImageObject.height;
+
+
+  /*
+   * 短い辺を
+   * 正方形いっぱいにする
+   */
+
+  cropScale =
+    size / Math.min(iw,ih);
+
+
+  const displayWidth =
+    iw * cropScale;
+
+  const displayHeight =
+    ih * cropScale;
+
+
+  /*
+   * 最初は中央
+   */
+
+  cropX =
+    (size - displayWidth) / 2;
+
+  cropY =
+    (size - displayHeight) / 2;
+
+
+  img.src =
+    cropImageObject.src;
+
+
+  updateCropImage();
+
+
+  document
+    .getElementById("cropModal")
+    .style.display = "flex";
+
+}
+
+
+/* =========================
+   画像位置更新
+========================= */
+
+function updateCropImage() {
+
+  const img =
+    document.getElementById("cropImage");
+
+
+  img.style.width =
+    (cropImageObject.width * cropScale)
+    + "px";
+
+
+  img.style.height =
+    (cropImageObject.height * cropScale)
+    + "px";
+
+
+  img.style.left =
+    cropX + "px";
+
+
+  img.style.top =
+    cropY + "px";
+
+}
+
+
+/* =========================
+   ドラッグ開始
+========================= */
+
+function startDrag(x,y) {
+
+  dragging = true;
+
+  dragStartX = x;
+  dragStartY = y;
+
+  startCropX = cropX;
+  startCropY = cropY;
+
+}
+
+
+/* =========================
+   ドラッグ移動
+========================= */
+
+function moveDrag(x,y) {
+
+  if (!dragging)
+    return;
+
+
+  cropX =
+    startCropX +
+    (x - dragStartX);
+
+
+  cropY =
+    startCropY +
+    (y - dragStartY);
+
+
+  const area =
+    document.getElementById("cropArea");
+
+
+  const size =
+    area.clientWidth;
+
+
+  const width =
+    cropImageObject.width *
+    cropScale;
+
+
+  const height =
+    cropImageObject.height *
+    cropScale;
+
+
+  /*
+   * 画像が正方形から
+   * はみ出さないようにする
+   */
+
+  cropX =
+    Math.min(
+      0,
+      Math.max(
+        size - width,
+        cropX
+      )
+    );
+
+
+  cropY =
+    Math.min(
+      0,
+      Math.max(
+        size - height,
+        cropY
+      )
+    );
+
+
+  updateCropImage();
+
+}
+
+
+/* =========================
+   ドラッグ終了
+========================= */
+
+function endDrag() {
+
+  dragging = false;
+
+}
+
+
+/* =========================
+   マウス
+========================= */
+
+const cropArea =
+  document.getElementById("cropArea");
+
+
+cropArea.addEventListener(
+  "mousedown",
+  e => {
+
+    startDrag(
+      e.clientX,
+      e.clientY
+    );
 
   }
+);
+
+
+window.addEventListener(
+  "mousemove",
+  e => {
+
+    moveDrag(
+      e.clientX,
+      e.clientY
+    );
+
+  }
+);
+
+
+window.addEventListener(
+  "mouseup",
+  endDrag
+);
+
+
+/* =========================
+   タッチ
+========================= */
+
+cropArea.addEventListener(
+  "touchstart",
+  e => {
+
+    const t =
+      e.touches[0];
+
+    startDrag(
+      t.clientX,
+      t.clientY
+    );
+
+  },
+  {passive:false}
+);
+
+
+cropArea.addEventListener(
+  "touchmove",
+  e => {
+
+    e.preventDefault();
+
+    const t =
+      e.touches[0];
+
+    moveDrag(
+      t.clientX,
+      t.clientY
+    );
+
+  },
+  {passive:false}
+);
+
+
+cropArea.addEventListener(
+  "touchend",
+  endDrag
+);
+
+
+/* =========================
+   切り抜き確定
+========================= */
+
+async function confirmCrop() {
+
+  if (!cropImageObject)
+    return;
+
+
+  const area =
+    document.getElementById("cropArea");
+
+
+  const size =
+    area.clientWidth;
+
+
+  const canvas =
+    document.createElement("canvas");
+
+
+  /*
+   * 保存画像サイズ
+   */
+
+  const outputSize = 800;
+
+
+  canvas.width =
+    outputSize;
+
+  canvas.height =
+    outputSize;
+
+
+  const ctx =
+    canvas.getContext("2d");
+
+
+  /*
+   * cropArea上の位置を
+   * 元画像の座標へ戻す
+   */
+
+  const sourceX =
+    (-cropX) /
+    cropScale;
+
+  const sourceY =
+    (-cropY) /
+    cropScale;
+
+
+  const sourceSize =
+    size /
+    cropScale;
+
+
+  ctx.drawImage(
+
+    cropImageObject,
+
+    sourceX,
+    sourceY,
+
+    sourceSize,
+    sourceSize,
+
+    0,
+    0,
+
+    outputSize,
+    outputSize
+
+  );
+
+
+  canvas.toBlob(
+    async blob => {
+
+      if (!blob) {
+
+        alert(
+          "画像の作成に失敗しました"
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * 新しい画像としてアップロード
+       */
+
+      await uploadCroppedImage(blob);
+
+    },
+    "image/jpeg",
+    0.85
+  );
+
+}
+
+
+/* =========================
+   切り抜きキャンセル
+========================= */
+
+function cancelCrop() {
+
+  document
+    .getElementById("cropModal")
+    .style.display = "none";
+
+  cropFile = null;
+
+  cropImageObject = null;
+
+}
+
+
+/* =========================
+   現在のアップロード対象
+========================= */
+
+let uploadPerson = null;
+
+
+/*
+ * 元のselectImageを
+ * 人物付きにする
+ */
+
+function openCrop(person,files) {
+
+  if (!files || !files.length)
+    return;
+
+
+  uploadPerson = person;
+
+  selectImage(
+    person,
+    files
+  );
+
+}
+
+
+/* =========================
+   切り抜き画像アップロード
+========================= */
+
+async function uploadCroppedImage(blob) {
+
+  if (!uploadPerson) {
+
+    alert(
+      "人物情報がありません"
+    );
+
+    return;
+
+  }
+
+
+  const fileName =
+    `${uploadPerson.id}/` +
+    `${Date.now()}-` +
+    `${Math.random()
+      .toString(36)
+      .substring(2)}.jpg`;
+
+
+  const {
+    error: uploadError
+  } =
+    await supabaseClient
+      .storage
+      .from("images")
+      .upload(
+        fileName,
+        blob,
+        {
+          contentType:"image/jpeg"
+        }
+      );
+
+
+  if (uploadError) {
+
+    console.error(uploadError);
+
+    alert(
+      "画像のアップロードに失敗しました\n" +
+      uploadError.message
+    );
+
+    return;
+
+  }
+
+
+  const {
+    error: dbError
+  } =
+    await supabaseClient
+      .from("person_images")
+      .insert({
+
+        person_id:
+          uploadPerson.id,
+
+        image_path:
+          fileName
+
+      });
+
+
+  if (dbError) {
+
+    console.error(dbError);
+
+    alert(
+      "画像情報の保存に失敗しました\n" +
+      dbError.message
+    );
+
+    return;
+
+  }
+
+
+  document
+    .getElementById("cropModal")
+    .style.display = "none";
+
+
+  cropFile = null;
+
+  cropImageObject = null;
+
+  uploadPerson = null;
 
 
   await loadPeople();
@@ -1288,22 +1690,14 @@ async function uploadImages(
    画像削除
 ========================= */
 
-async function deleteImage(
-  image
-) {
+async function deleteImage(image) {
 
-  const ok =
-    confirm(
+  if (
+    !confirm(
       "この画像を削除しますか？"
-    );
+    )
+  ) return;
 
-
-  if (!ok) return;
-
-
-  /*
-  Storageから削除
-  */
 
   const {
     error: storageError
@@ -1319,17 +1713,14 @@ async function deleteImage(
   if (storageError) {
 
     alert(
-      "Storageから画像を削除できませんでした"
+      "Storageから画像を削除できませんでした\n" +
+      storageError.message
     );
 
     return;
 
   }
 
-
-  /*
-  Databaseから削除
-  */
 
   const {
     error: dbError
@@ -1346,7 +1737,8 @@ async function deleteImage(
   if (dbError) {
 
     alert(
-      "画像情報を削除できませんでした"
+      "画像情報を削除できませんでした\n" +
+      dbError.message
     );
 
     return;
@@ -1360,7 +1752,7 @@ async function deleteImage(
 
 
 /* =========================
-   人物一覧表示
+   人物一覧
 ========================= */
 
 function renderPeople() {
@@ -1371,228 +1763,301 @@ function renderPeople() {
     );
 
 
-  list.innerHTML =
-    "";
+  list.innerHTML = "";
 
 
-  people.forEach(
-    person => {
+  people.forEach(person => {
+
+    const personDiv =
+      document.createElement("div");
 
 
-      const personDiv =
-        document.createElement(
-          "div"
-        );
+    personDiv.className =
+      "person";
 
 
-      personDiv.className =
-        "person";
+    /*
+     * ヘッダー
+     */
+
+    const header =
+      document.createElement("div");
 
 
-      /* ヘッダー */
-
-      const header =
-        document.createElement(
-          "div"
-        );
+    header.className =
+      "person-header";
 
 
-      header.className =
-        "person-header";
+    const title =
+      document.createElement("h3");
 
 
-      const title =
-        document.createElement(
-          "h3"
-        );
+    title.textContent =
+      `${person.name}（画像 ${person.images.length}枚）`;
 
 
-      title.textContent =
-        `${person.name}（画像 ${person.images.length}枚）`;
+    header.appendChild(title);
 
 
-      header.appendChild(
-        title
-      );
+    /*
+     * 人物削除
+     */
+
+    const deleteButton =
+      document.createElement("button");
 
 
-      /* 人物削除 */
-
-      const deletePersonButton =
-        document.createElement(
-          "button"
-        );
+    deleteButton.textContent =
+      "人物を削除";
 
 
-      deletePersonButton.textContent =
-        "人物を削除";
+    deleteButton.onclick =
+      () => deletePerson(person);
 
 
-      deletePersonButton.onclick =
-        function() {
+    header.appendChild(
+      deleteButton
+    );
 
-          deletePerson(
-            person
+
+    personDiv.appendChild(
+      header
+    );
+
+
+    /*
+     * 画像追加
+     */
+
+    const fileInput =
+      document.createElement("input");
+
+
+    fileInput.type =
+      "file";
+
+    fileInput.accept =
+      "image/*";
+
+    fileInput.multiple =
+      true;
+
+
+    fileInput.onchange =
+      function(e) {
+
+        const files =
+          Array.from(
+            e.target.files
           );
 
-        };
 
+        /*
+         * 1枚ずつ切り抜く
+         *
+         * 複数選択された場合は
+         * 最初の1枚から処理
+         */
 
-      header.appendChild(
-        deletePersonButton
-      );
+        if (files.length) {
 
-
-      personDiv.appendChild(
-        header
-      );
-
-
-      /* 画像追加 */
-
-      const fileInput =
-        document.createElement(
-          "input"
-        );
-
-
-      fileInput.type =
-        "file";
-
-
-      fileInput.accept =
-        "image/*";
-
-
-      fileInput.multiple =
-        true;
-
-
-      fileInput.onchange =
-        async function(event) {
-
-          const files =
-            Array.from(
-              event.target.files
-            );
-
-
-          if (
-            files.length === 0
-          ) return;
-
-
-          fileInput.disabled =
-            true;
-
-
-          await uploadImages(
+          openCrop(
             person,
-            files
-          );
-
-        };
-
-
-      personDiv.appendChild(
-        fileInput
-      );
-
-
-      /* 画像一覧 */
-
-      const imageList =
-        document.createElement(
-          "div"
-        );
-
-
-      imageList.className =
-        "image-list";
-
-
-      person.images.forEach(
-        image => {
-
-
-          const imageBox =
-            document.createElement(
-              "div"
-            );
-
-
-          imageBox.className =
-            "image-box";
-
-
-          const img =
-            document.createElement(
-              "img"
-            );
-
-
-          img.src =
-            image.url;
-
-
-          imageBox.appendChild(
-            img
-          );
-
-
-          /* 画像削除 */
-
-          const deleteButton =
-            document.createElement(
-              "button"
-            );
-
-
-          deleteButton.textContent =
-            "×";
-
-
-          deleteButton.className =
-            "delete-image";
-
-
-          deleteButton.onclick =
-            function() {
-
-              deleteImage(
-                image
-              );
-
-            };
-
-
-          imageBox.appendChild(
-            deleteButton
-          );
-
-
-          imageList.appendChild(
-            imageBox
+            [files[0]]
           );
 
         }
+
+
+        /*
+         * inputをリセット
+         * 同じ画像を再選択できる
+         */
+
+        fileInput.value = "";
+
+      };
+
+
+    personDiv.appendChild(
+      fileInput
+    );
+
+
+    /*
+     * 画像一覧
+     */
+
+    const imageList =
+      document.createElement("div");
+
+
+    imageList.className =
+      "image-list";
+
+
+    person.images.forEach(image => {
+
+      const imageBox =
+        document.createElement("div");
+
+
+      imageBox.className =
+        "image-box";
+
+
+      /*
+       * 画像
+       */
+
+      const img =
+        document.createElement("img");
+
+
+      img.src =
+        image.url;
+
+
+      /*
+       * 画像クリック
+       * → 再切り抜き
+       */
+
+      imageBox.onclick =
+        function(e) {
+
+          /*
+           * 削除ボタンを押した場合は
+           * 再切り抜きしない
+           */
+
+          if (
+            e.target.classList.contains(
+              "delete-image"
+            )
+          ) return;
+
+
+          /*
+           * URLから画像を読み込む
+           */
+
+          fetch(image.url)
+            .then(res => res.blob())
+            .then(blob => {
+
+              uploadPerson =
+                person;
+
+              selectImage(
+                person,
+                [new File(
+                  [blob],
+                  "image.jpg",
+                  {
+                    type:
+                      blob.type
+                  }
+                )]
+              );
+
+            })
+            .catch(error => {
+
+              console.error(error);
+
+              alert(
+                "画像を読み込めませんでした"
+              );
+
+            });
+
+        };
+
+
+      imageBox.appendChild(img);
+
+
+      /*
+       * 削除
+       */
+
+      const deleteImageButton =
+        document.createElement("button");
+
+
+      deleteImageButton.textContent =
+        "×";
+
+
+      deleteImageButton.className =
+        "delete-image";
+
+
+      deleteImageButton.onclick =
+        function(e) {
+
+          e.stopPropagation();
+
+          deleteImage(image);
+
+        };
+
+
+      imageBox.appendChild(
+        deleteImageButton
       );
 
 
-      personDiv.appendChild(
-        imageList
+      imageList.appendChild(
+        imageBox
       );
 
+    });
 
-      list.appendChild(
-        personDiv
-      );
 
-    }
-  );
+    personDiv.appendChild(
+      imageList
+    );
+
+
+    list.appendChild(
+      personDiv
+    );
+
+  });
 
 
   updateCounts();
+
+}
+
+
+/* =========================
+   カウント
+========================= */
+
+function updateCounts() {
+
+  document
+    .getElementById("personCount")
+    .textContent =
+    people.length;
+
+
+  const count =
+    people.reduce(
+      (total,person) =>
+        total +
+        person.images.length,
+      0
+    );
+
+
+  document
+    .getElementById("imageCount")
+    .textContent =
+    count;
 
 }
 
@@ -1604,11 +2069,8 @@ function renderPeople() {
 function shuffle(array) {
 
   for (
-    let i =
-      array.length - 1;
-
+    let i = array.length - 1;
     i > 0;
-
     i--
   ) {
 
@@ -1622,8 +2084,7 @@ function shuffle(array) {
     [
       array[i],
       array[j]
-    ]
-      =
+    ] =
     [
       array[j],
       array[i]
@@ -1650,9 +2111,7 @@ function startGame() {
     );
 
 
-  if (
-    usablePeople.length === 0
-  ) {
+  if (!usablePeople.length) {
 
     alert(
       "最低1人、画像を2枚以上追加してください"
@@ -1666,41 +2125,29 @@ function startGame() {
   let cards = [];
 
 
-  usablePeople.forEach(
-    person => {
+  usablePeople.forEach(person => {
+
+    const images =
+      shuffle(
+        [...person.images]
+      ).slice(0,2);
 
 
-      const shuffledImages =
-        shuffle(
-          [...person.images]
-        );
+    images.forEach(image => {
 
+      cards.push({
 
-      const selectedImages =
-        shuffledImages.slice(
-          0,
-          2
-        );
+        person:
+          person.name,
 
+        image:
+          image.url
 
-      selectedImages.forEach(
-        image => {
+      });
 
-          cards.push({
+    });
 
-            person:
-              person.name,
-
-            image:
-              image.url
-
-          });
-
-        }
-      );
-
-    }
-  );
+  });
 
 
   cards =
@@ -1708,50 +2155,35 @@ function startGame() {
 
 
   document
-    .getElementById(
-      "editor"
-    )
+    .getElementById("editor")
     .style.display =
     "none";
 
 
   document
-    .getElementById(
-      "game"
-    )
+    .getElementById("game")
     .style.display =
     "block";
 
 
   document
-    .getElementById(
-      "message"
-    )
+    .getElementById("message")
     .innerHTML =
     "";
 
 
   const board =
-    document.getElementById(
-      "board"
-    );
+    document.getElementById("board");
 
 
-  board.innerHTML =
-    "";
+  board.innerHTML = "";
 
 
-  selectedCards =
-    [];
+  selectedCards = [];
 
+  lock = false;
 
-  lock =
-    false;
-
-
-  moves =
-    0;
-
+  moves = 0;
 
   remainingPairs =
     usablePeople.length;
@@ -1760,65 +2192,50 @@ function startGame() {
   updateStatus();
 
 
-  cards.forEach(
-    card => {
+  cards.forEach(card => {
+
+    const cardElement =
+      document.createElement("div");
 
 
-      const cardElement =
-        document.createElement(
-          "div"
-        );
+    cardElement.className =
+      "card";
 
 
-      cardElement.className =
-        "card";
+    cardElement.dataset.person =
+      card.person;
 
 
-      cardElement.dataset.person =
-        card.person;
+    const img =
+      document.createElement("img");
 
 
-      const img =
-        document.createElement(
-          "img"
-        );
+    img.src =
+      card.image;
 
 
-      img.src =
-        card.image;
+    img.className =
+      "hidden-image";
 
 
-      img.className =
-        "hidden-image";
+    cardElement.appendChild(img);
 
 
-      cardElement.appendChild(
-        img
-      );
+    cardElement.onclick =
+      () => flipCard(cardElement);
 
 
-      cardElement.onclick =
-        function() {
+    board.appendChild(
+      cardElement
+    );
 
-          flipCard(
-            cardElement
-          );
-
-        };
-
-
-      board.appendChild(
-        cardElement
-      );
-
-    }
-  );
+  });
 
 }
 
 
 /* =========================
-   ステータス更新
+   ステータス
 ========================= */
 
 function updateStatus() {
@@ -1842,30 +2259,31 @@ function updateStatus() {
 
 
 /* =========================
-   カードをめくる
+   カード
 ========================= */
 
 function flipCard(card) {
 
-  if (lock) return;
+  if (lock)
+    return;
+
 
   if (
     card.classList.contains(
       "completed"
     )
-  ) return;
+  )
+    return;
+
 
   if (
-    selectedCards.includes(
-      card
-    )
-  ) return;
+    selectedCards.includes(card)
+  )
+    return;
 
 
   const img =
-    card.querySelector(
-      "img"
-    );
+    card.querySelector("img");
 
 
   img.classList.remove(
@@ -1878,9 +2296,7 @@ function flipCard(card) {
   );
 
 
-  selectedCards.push(
-    card
-  );
+  selectedCards.push(card);
 
 
   if (
@@ -1909,6 +2325,17 @@ function flipCard(card) {
 
 function checkPair() {
 
+  if (
+    selectedCards.length !== 2
+  ) {
+
+    lock = false;
+
+    return;
+
+  }
+
+
   const card1 =
     selectedCards[0];
 
@@ -1916,15 +2343,9 @@ function checkPair() {
     selectedCards[1];
 
 
-  const person1 =
-    card1.dataset.person;
-
-  const person2 =
-    card2.dataset.person;
-
-
   if (
-    person1 === person2
+    card1.dataset.person ===
+    card2.dataset.person
   ) {
 
     card1.classList.add(
@@ -1934,6 +2355,7 @@ function checkPair() {
     card2.classList.add(
       "completed"
     );
+
 
     remainingPairs--;
 
@@ -1945,34 +2367,33 @@ function checkPair() {
     ) {
 
       document
-        .getElementById(
-          "message"
-        )
-        .innerHTML =
-        `
-        <div class="clear-box">
+        .getElementById("message")
+        .innerHTML = `
 
-          <h2>
-            🎉 GAME CLEAR！
-          </h2>
+          <div class="clear-box">
 
-          <p>
-            ${moves}回でクリアしました！
-          </p>
+            <h2>
+              🎉 GAME CLEAR！
+            </h2>
 
-          <button
-            onclick="startGame()"
-          >
-            もう一度遊ぶ
-          </button>
+            <p>
+              ${moves}回でクリアしました！
+            </p>
 
-          <button
-            onclick="backToEditor()"
-          >
-            編集画面へ
-          </button>
+            <button
+              onclick="startGame()"
+            >
+              もう一度遊ぶ
+            </button>
 
-        </div>
+            <button
+              onclick="backToEditor()"
+            >
+              編集画面へ
+            </button>
+
+          </div>
+
         `;
 
     }
@@ -1987,6 +2408,7 @@ function checkPair() {
         "hidden-image"
       );
 
+
     card2
       .querySelector("img")
       .classList.add(
@@ -1997,6 +2419,7 @@ function checkPair() {
     card1.classList.remove(
       "revealed"
     );
+
 
     card2.classList.remove(
       "revealed"
@@ -2013,55 +2436,31 @@ function checkPair() {
 
 
 /* =========================
-   編集画面へ
+   編集画面
 ========================= */
 
 function backToEditor() {
 
   document
-    .getElementById(
-      "game"
-    )
+    .getElementById("game")
     .style.display =
     "none";
 
 
   document
-    .getElementById(
-      "editor"
-    )
+    .getElementById("editor")
     .style.display =
     "block";
 
 
   document
-    .getElementById(
-      "message"
-    )
+    .getElementById("message")
     .innerHTML =
     "";
 
 }
 
-
-/* =========================
-   初期化
-========================= */
-
-function enterSite() {
-
-  // 始める画面を消す
-  document.getElementById("startScreen").style.display = "none";
-
-  // Supabaseから最新データを読み込む
-  loadPeople();
-
-}
-
 </script>
-
 
 </body>
 </html>
-
-
