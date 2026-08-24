@@ -2651,6 +2651,7 @@ async function openCropForNewImage(
 /* =========================================================
    既存画像を切り抜き
 ========================================================= */
+
 async function openCropForExistingImage(
   person,
   image
@@ -2667,9 +2668,14 @@ async function openCropForExistingImage(
     }
 
 
+    console.log(
+      "既存画像を取得:",
+      image.path
+    );
+
+
     /*
-      Supabase Storageから直接取得する
-      Public URLをfetch()しない
+      Supabase Storageから直接取得
     */
 
     const {
@@ -2684,21 +2690,73 @@ async function openCropForExistingImage(
       );
 
 
-    if (error) {
+    /*
+      Storageに存在しない
+    */
 
-      throw new Error(
-        "Supabase Storageから画像を取得できませんでした。\n\n" +
-        error.message
+    if (error || !blob) {
+
+      console.error(
+        "Storage画像取得失敗:",
+        error
       );
 
-    }
+
+      const removeBroken =
+        confirm(
+          "この画像はStorageに存在しません。\n\n" +
+          "画像パス:\n" +
+          image.path +
+          "\n\n" +
+          "この壊れた画像データをDBから削除しますか？"
+        );
 
 
-    if (!blob) {
+      if (removeBroken) {
 
-      throw new Error(
-        "Storageから画像データが返されませんでした。"
-      );
+        /*
+          DBから壊れた画像レコードを削除
+        */
+
+        const {
+          error: deleteError
+        } =
+        await supabaseClient
+          .from("person_images")
+          .delete()
+          .eq(
+            "id",
+            image.id
+          );
+
+
+        if (deleteError) {
+
+          throw new Error(
+            "壊れた画像データの削除に失敗しました。\n\n" +
+            deleteError.message
+          );
+
+        }
+
+
+        /*
+          最新状態を再読み込み
+        */
+
+        await loadPeople();
+
+
+        alert(
+          "存在しない画像データを削除しました。"
+        );
+
+        return;
+
+      }
+
+
+      return;
 
     }
 
