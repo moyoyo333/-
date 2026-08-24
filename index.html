@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>人物でそろえる神経衰弱</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #222;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background: white;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1000px;
+      margin: 20px auto;
+    }
+
+    .panel {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 250px;
+      max-width: 100%;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      background: #4169e1;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    .person {
+      border: 2px solid #ddd;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+    }
+
+    .person-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .image-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .image-box {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .delete-image {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: red;
+      padding: 3px 8px;
+    }
+
+    .card-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      background: #4169e1;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hidden-image {
+      display: none;
+    }
+
+    .completed {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    #game {
+      display: none;
+    }
+
+    #message {
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 600px) {
+
+      .card-board {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .person-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>人物でそろえる神経衰弱</h1>
+  <p>画像が違っても同じ人物ならペア！</p>
+</header>
+
+<div class="container">
+
+  <!-- 作成画面 -->
+
+  <div id="editor" class="panel">
+
+    <h2>人物を追加</h2>
+
+    <input
+      type="text"
+      id="personName"
+      placeholder="人物名を入力"
+    >
+
+    <button onclick="addPerson()">
+      人物を追加
+    </button>
+
+    <div id="personList"></div>
+
+    <br>
+
+    <button onclick="startGame()">
+      ゲーム開始
+    </button>
+
+  </div>
+
+
+  <!-- ゲーム画面 -->
+
+  <div id="game" class="panel">
+
+    <button onclick="backToEditor()">
+      編集画面に戻る
+    </button>
+
+    <h2>神経衰弱</h2>
+
+    <p id="status"></p>
+
+    <div id="board" class="card-board"></div>
+
+    <div id="message"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let people = [];
+
+/*
+people のデータ例
+
+[
+  {
+    name: "初音ミク",
+    images: [
+      "画像データ",
+      "画像データ"
+    ]
+  }
+]
+
+*/
+
+
+function addPerson() {
+
+  const nameInput =
+    document.getElementById("personName");
+
+  const name =
+    nameInput.value.trim();
+
+
+  if (name === "") {
+
+    alert("人物名を入力してください");
+
+    return;
+
+  }
+
+
+  people.push({
+
+    name: name,
+
+    images: []
+
+  });
+
+
+  nameInput.value = "";
+
+
+  renderPeople();
+
+}
+
+
+
+/* 人物一覧を表示 */
+
+function renderPeople() {
+
+  const list =
+    document.getElementById("personList");
+
+
+  list.innerHTML = "";
+
+
+  people.forEach((person, personIndex) => {
+
+    const personDiv =
+      document.createElement("div");
+
+
+    personDiv.className =
+      "person";
+
+
+    /* 人物名 */
+
+    const header =
+      document.createElement("div");
+
+
+    header.className =
+      "person-header";
+
+
+    const title =
+      document.createElement("h3");
+
+
+    title.textContent =
+      person.name +
+      "（画像 " +
+      person.images.length +
+      "枚）";
+
+
+    header.appendChild(title);
+
+
+    /* 人物削除 */
+
+    const deletePersonButton =
+      document.createElement("button");
+
+
+    deletePersonButton.textContent =
+      "人物を削除";
+
+
+    deletePersonButton.onclick =
+      function () {
+
+        people.splice(
+          personIndex,
+          1
+        );
+
+
+        renderPeople();
+
+      };
+
+
+    header.appendChild(
+      deletePersonButton
+    );
+
+
+    personDiv.appendChild(
+      header
+    );
+
+
+    /* 画像追加 */
+
+    const fileInput =
+      document.createElement("input");
+
+
+    fileInput.type =
+      "file";
+
+
+    fileInput.accept =
+      "image/*";
+
+
+    fileInput.multiple =
+      true;
+
+
+    fileInput.onchange =
+      function (event) {
+
+        const files =
+          event.target.files;
+
+
+        for (
+          let i = 0;
+          i < files.length;
+          i++
+        ) {
+
+          const reader =
+            new FileReader();
+
+
+          reader.onload =
+            function (e) {
+
+              person.images.push(
+                e.target.result
+              );
+
+
+              renderPeople();
+
+            };
+
+
+          reader.readAsDataURL(
+            files[i]
+          );
+
+        }
+
+      };
+
+
+    personDiv.appendChild(
+      fileInput
+    );
+
+
+    /* 画像一覧 */
+
+    const imageList =
+      document.createElement("div");
+
+
+    imageList.className =
+      "image-list";
+
+
+    person.images.forEach(
+      (
+        image,
+        imageIndex
+      ) => {
+
+        const imageBox =
+          document.createElement("div");
+
+
+        imageBox.className =
+          "image-box";
+
+
+        const img =
+          document.createElement("img");
+
+
+        img.src =
+          image;
+
+
+        imageBox.appendChild(
+          img
+        );
+
+
+        /* 画像削除 */
+
+        const deleteButton =
+          document.createElement("button");
+
+
+        deleteButton.textContent =
+          "×";
+
+
+        deleteButton.className =
+          "delete-image";
+
+
+        deleteButton.onclick =
+          function () {
+
+            person.images.splice(
+              imageIndex,
+              1
+            );
+
+
+            renderPeople();
+
+          };
+
+
+        imageBox.appendChild(
+          deleteButton
+        );
+
+
+        imageList.appendChild(
+          imageBox
+        );
+
+      }
+    );
+
+
+    personDiv.appendChild(
+      imageList
+    );
+
+
+    list.appendChild(
+      personDiv
+    );
+
+  });
+
+}
+
+
+
+/* 配列をランダムに並び替える */
+
+function shuffle(array) {
+
+  for (
+    let i =
+      array.length - 1;
+
+    i > 0;
+
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+
+    [
+      array[i],
+      array[j]
+    ]
+      =
+    [
+      array[j],
+      array[i]
+    ];
+
+  }
+
+
+  return array;
+
+}
+
+
+
+let selectedCards =
+  [];
+
+
+let lock =
+  false;
+
+
+let remainingPairs =
+  0;
+
+
+let moves =
+  0;
+
+
+
+function startGame() {
+
+  /*
+  画像が2枚以上ある人物だけ使う
+  */
+
+  const usablePeople =
+    people.filter(
+      person =>
+        person.images.length >= 2
+    );
+
+
+  if (
+    usablePeople.length === 0
+  ) {
+
+    alert(
+      "最低1人、画像を2枚以上追加してください"
+    );
+
+
+    return;
+
+  }
+
+
+  let cards = [];
+
+
+  usablePeople.forEach(
+    person => {
+
+      /*
+      何枚画像を追加していても
+      ランダムに2枚選ぶ
+      */
+
+      const shuffledImages =
+        shuffle(
+          [...person.images]
+        );
+
+
+      const selectedImages =
+        shuffledImages.slice(
+          0,
+          2
+        );
+
+
+      selectedImages.forEach(
+        image => {
+
+          cards.push({
+
+            person:
+              person.name,
+
+            image:
+              image
+
+          });
+
+        }
+      );
+
+    }
+  );
+
+
+  cards =
+    shuffle(cards);
+
+
+  document
+    .getElementById("editor")
+    .style.display =
+      "none";
+
+
+  document
+    .getElementById("game")
+    .style.display =
+      "block";
+
+
+  const board =
+    document.getElementById(
+      "board"
+    );
+
+
+  board.innerHTML =
+    "";
+
+
+  selectedCards =
+    [];
+
+
+  lock =
+    false;
+
+
+  moves =
+    0;
+
+
+  remainingPairs =
+    usablePeople.length;
+
+
+  updateStatus();
+
+
+  cards.forEach(
+    (
+      card,
+      index
+    ) => {
+
+      const cardElement =
+        document.createElement(
+          "div"
+        );
+
+
+      cardElement.className =
+        "card";
+
+
+      cardElement.dataset.person =
+        card.person;
+
+
+      cardElement.dataset.index =
+        index;
+
+
+      const img =
+        document.createElement(
+          "img"
+        );
+
+
+      img.src =
+        card.image;
+
+
+      img.className =
+        "hidden-image";
+
+
+      cardElement.appendChild(
+        img
+      );
+
+
+      cardElement.onclick =
+        function () {
+
+          flipCard(
+            cardElement
+          );
+
+        };
+
+
+      board.appendChild(
+        cardElement
+      );
+
+    }
+  );
+
+}
+
+
+
+function updateStatus() {
+
+  document
+    .getElementById("status")
+    .textContent =
+      "残り "
+      +
+      remainingPairs
+      +
+      "組　｜　"
+      +
+      "挑戦回数 "
+      +
+      moves;
+
+}
+
+
+
+function flipCard(card) {
+
+  if (
+    lock
+  ) return;
+
+
+  if (
+    card.classList.contains(
+      "completed"
+    )
+  ) return;
+
+
+  if (
+    selectedCards.includes(
+      card
+    )
+  ) return;
+
+
+  const img =
+    card.querySelector("img");
+
+
+  img.classList.remove(
+    "hidden-image"
+  );
+
+
+  selectedCards.push(
+    card
+  );
+
+
+  if (
+    selectedCards.length === 2
+  ) {
+
+    moves++;
+
+
+    updateStatus();
+
+
+    lock =
+      true;
+
+
+    setTimeout(
+      checkPair,
+      700
+    );
+
+  }
+
+}
+
+
+
+function checkPair() {
+
+  const card1 =
+    selectedCards[0];
+
+
+  const card2 =
+    selectedCards[1];
+
+
+  const person1 =
+    card1.dataset.person;
+
+
+  const person2 =
+    card2.dataset.person;
+
+
+  /*
+  同じ人物なら成功
+  */
+
+  if (
+    person1 === person2
+  ) {
+
+    card1.classList.add(
+      "completed"
+    );
+
+
+    card2.classList.add(
+      "completed"
+    );
+
+
+    remainingPairs--;
+
+
+    updateStatus();
+
+
+    if (
+      remainingPairs === 0
+    ) {
+
+      document
+        .getElementById("message")
+        .textContent =
+          "🎉 クリア！";
+
+    }
+
+  }
+
+  else {
+
+    card1
+      .querySelector("img")
+      .classList.add(
+        "hidden-image"
+      );
+
+
+    card2
+      .querySelector("img")
+      .classList.add(
+        "hidden-image"
+      );
+
+  }
+
+
+  selectedCards =
+    [];
+
+
+  lock =
+    false;
+
+}
+
+
+
+/* 編集画面に戻る */
+
+function backToEditor() {
+
+  document
+    .getElementById("game")
+    .style.display =
+      "none";
+
+
+  document
+    .getElementById("editor")
+    .style.display =
+      "block";
+
+
+  document
+    .getElementById("message")
+    .textContent =
+      "";
+
+}
+
+</script>
+
+</body>
+</html>
