@@ -547,7 +547,28 @@
 
 
 <body>
+<div id="startScreen" style="
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg,#4169e1,#7b68ee);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+">
 
+  <button
+    onclick="enterSite()"
+    style="
+      font-size: 22px;
+      padding: 18px 40px;
+      border-radius: 15px;
+    "
+  >
+    🎮 始める
+  </button>
+
+</div>
 <header>
 
   <h1>
@@ -2028,8 +2049,15 @@ function backToEditor() {
    初期化
 ========================= */
 
+function enterSite() {
 
-console.log("ここまでOK");
+  // 始める画面を消す
+  document.getElementById("startScreen").style.display = "none";
+
+  // Supabaseから最新データを読み込む
+  loadPeople();
+
+}
 
 </script>
 
