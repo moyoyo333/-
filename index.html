@@ -418,6 +418,9 @@ async function loadPeople() {
 }
 
 
+
+  
+
 async function addPerson() {
 
   const nameInput =
@@ -425,7 +428,6 @@ async function addPerson() {
 
   const name =
     nameInput.value.trim();
-
 
   if (name === "") {
 
@@ -435,15 +437,15 @@ async function addPerson() {
 
   }
 
-
   await supabase
-  .from("people")
-  .insert({
-    name: name
-  });
+    .from("people")
+    .insert({
+      name: name
+    });
 
-loadPeople();
+  nameInput.value = "";
 
+  await loadPeople();
 
 }
 
