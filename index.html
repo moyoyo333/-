@@ -6,366 +6,821 @@
 
   <title>人物でそろえる神経衰弱</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    /* =========================
+       基本設定
+    ========================= */
+
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        "Noto Sans JP",
+        sans-serif;
+
+      background:
+        linear-gradient(
+          135deg,
+          #eef2ff,
+          #f8f9ff
+        );
+
       color: #222;
+      min-height: 100vh;
     }
+
+
+    /* =========================
+       ヘッダー
+    ========================= */
 
     header {
       text-align: center;
-      padding: 20px;
-      background: white;
+      padding: 30px 20px 25px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4169e1,
+          #7b68ee
+        );
+
+      color: white;
+
+      box-shadow:
+        0 4px 15px
+        rgba(0,0,0,.12);
     }
 
     h1 {
-      margin-bottom: 5px;
+      margin: 0 0 8px;
+      font-size: 28px;
     }
 
-    .container {
-      width: 95%;
-      max-width: 1000px;
-      margin: 20px auto;
+    header p {
+      margin: 0;
+      opacity: .9;
     }
+
+
+    /* =========================
+       全体コンテナ
+    ========================= */
+
+    .container {
+      width: min(95%, 1000px);
+      margin: 25px auto 50px;
+    }
+
+
+    /* =========================
+       パネル
+    ========================= */
 
     .panel {
       background: white;
-      padding: 20px;
-      border-radius: 15px;
+
+      padding: 24px;
+
+      border-radius: 20px;
+
+      box-shadow:
+        0 8px 30px
+        rgba(0,0,0,.08);
+
       margin-bottom: 20px;
     }
 
+    h2 {
+      margin-top: 0;
+    }
+
+
+    /* =========================
+       統計
+    ========================= */
+
+    .stats,
+    .game-stats {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+
+      flex-wrap: wrap;
+
+      margin: 20px auto;
+
+      padding: 0 15px;
+    }
+
+    .stat-box,
+    .stat-card {
+      background: white;
+
+      min-width: 130px;
+
+      padding: 15px 20px;
+
+      border-radius: 16px;
+
+      text-align: center;
+
+      box-shadow:
+        0 5px 20px
+        rgba(0,0,0,.08);
+
+      transition: transform .2s;
+    }
+
+    .stat-box:hover,
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-box span,
+    .stat-card span {
+      display: block;
+
+      font-size: 28px;
+      font-weight: bold;
+
+      color: #4169e1;
+    }
+
+    small {
+      color: #666;
+    }
+
+
+    /* =========================
+       入力欄
+    ========================= */
+
     input[type="text"] {
-      padding: 10px;
+      width: min(300px, 100%);
+
+      padding: 12px 14px;
+
       font-size: 16px;
-      width: 250px;
+
+      border: 2px solid #ddd;
+
+      border-radius: 10px;
+
+      outline: none;
+
+      transition: border .2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #4169e1;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
       max-width: 100%;
     }
 
+
+    /* =========================
+       ボタン
+    ========================= */
+
     button {
-      padding: 10px 15px;
+      padding: 11px 18px;
+
       margin: 5px;
+
       border: none;
-      border-radius: 8px;
-      background: #4169e1;
+
+      border-radius: 10px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4169e1,
+          #6a5acd
+        );
+
       color: white;
-      font-size: 16px;
+
+      font-size: 15px;
+      font-weight: bold;
+
       cursor: pointer;
+
+      transition:
+        transform .2s,
+        opacity .2s,
+        box-shadow .2s;
+
+      box-shadow:
+        0 4px 10px
+        rgba(65,105,225,.25);
     }
 
     button:hover {
-      opacity: 0.8;
+      transform: translateY(-2px);
+      opacity: .9;
     }
 
-    
+    button:active {
+      transform: scale(.97);
+    }
+
+
+    /* =========================
+       人物カード
+    ========================= */
 
     .person {
-  background: white;
-  border: none;
-  border-radius: 18px;
-  padding: 16px;
-  margin-top: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-}
+      background: #fff;
 
+      border: 1px solid #eee;
+
+      border-radius: 18px;
+
+      padding: 18px;
+
+      margin-top: 18px;
+
+      box-shadow:
+        0 4px 15px
+        rgba(0,0,0,.07);
+    }
+
+    .person-header {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+    }
+
+    .person-header h3 {
+      margin: 0;
+    }
+
+
+    /* =========================
+       画像一覧
+    ========================= */
 
     .image-list {
       display: flex;
+
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
+
+      gap: 12px;
+
+      margin-top: 15px;
     }
 
     .image-box {
       position: relative;
-      width: 100px;
-      height: 100px;
+
+      width: 110px;
+      height: 110px;
     }
 
     .image-box img {
       width: 100%;
       height: 100%;
+
       object-fit: cover;
-      border-radius: 8px;
+
+      border-radius: 12px;
+
+      box-shadow:
+        0 3px 10px
+        rgba(0,0,0,.15);
     }
 
     .delete-image {
       position: absolute;
-      top: -5px;
-      right: -5px;
-      background: red;
-      padding: 3px 8px;
+
+      top: -8px;
+      right: -8px;
+
+      width: 30px;
+      height: 30px;
+
+      padding: 0;
+      margin: 0;
+
+      border-radius: 50%;
+
+      background: #e53935;
+
+      display: flex;
+
+      justify-content: center;
+      align-items: center;
+
+      font-size: 18px;
+
+      box-shadow:
+        0 3px 8px
+        rgba(0,0,0,.2);
     }
+
+
+    /* =========================
+       ゲーム盤面
+    ========================= */
 
     .card-board {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-      gap: 10px;
+
+      grid-template-columns:
+        repeat(
+          auto-fit,
+          minmax(100px, 1fr)
+        );
+
+      gap: 12px;
+
+      margin-top: 20px;
     }
 
-   .card {
-  aspect-ratio: 1/1;
-  border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    #4169e1,
-    #7b68ee
-  );
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,.15);
-  transition: all .3s;
-}
+    .card {
+      position: relative;
 
-.card:hover{
-  transform:translateY(-4px);
-}
+      aspect-ratio: 1 / 1;
+
+      border-radius: 16px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4169e1,
+          #7b68ee
+        );
+
+      cursor: pointer;
+
+      overflow: hidden;
+
+      box-shadow:
+        0 5px 15px
+        rgba(0,0,0,.15);
+
+      transition:
+        transform .25s,
+        box-shadow .25s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+
+      box-shadow:
+        0 8px 20px
+        rgba(0,0,0,.2);
+    }
+
+
+    /* カード裏面 */
+
+    .card::before {
+      content: "🃏";
+
+      position: absolute;
+
+      top: 50%;
+      left: 50%;
+
+      transform:
+        translate(-50%, -50%);
+
+      color: white;
+
+      font-size: clamp(28px, 6vw, 45px);
+
+      z-index: 2;
+    }
+
+    .card.revealed::before {
+      display: none;
+    }
+
+
+    /* カード画像 */
 
     .card img {
       width: 100%;
       height: 100%;
+
       object-fit: cover;
+
+      display: block;
     }
-
-.card::before{
-  content:"🃏";
-  position:absolute;
-  color:white;
-  font-size:36px;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-}
-
-.card.revealed::before{
-  display:none;
-}
-
 
     .hidden-image {
-      display: none;
+      display: none !important;
     }
+
+
+    /* 揃ったカード */
 
     .completed {
-      opacity: 0.4;
+      opacity: .45;
+
       pointer-events: none;
+
+      transform: scale(.96);
     }
-    .stats{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  margin-top:10px;
-}
-
-.stat-box{
-  background:white;
-  padding:12px 20px;
-  border-radius:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,.1);
-  text-align:center;
-}
 
 
-    #game {
-      display: none;
-    }
+    /* =========================
+       クリア画面
+    ========================= */
 
     #message {
       text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      margin-top: 20px;
+
+      font-size: 20px;
+
+      margin-top: 25px;
     }
+
+    .clear-box {
+      background:
+        linear-gradient(
+          135deg,
+          #fff,
+          #f3f1ff
+        );
+
+      padding: 25px;
+
+      border-radius: 20px;
+
+      box-shadow:
+        0 8px 25px
+        rgba(0,0,0,.1);
+
+      animation: popup .4s ease;
+    }
+
+    @keyframes popup {
+
+      from {
+        opacity: 0;
+        transform: scale(.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+    }
+
+
+    /* =========================
+       スマホ
+    ========================= */
 
     @media (max-width: 600px) {
 
+      header {
+        padding: 22px 15px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
       .card-board {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns:
+          repeat(3, 1fr);
+
+        gap: 8px;
+      }
+
+      .card {
+        border-radius: 12px;
+      }
+
+      .image-box {
+        width: 90px;
+        height: 90px;
       }
 
       .person-header {
         flex-direction: column;
+
         align-items: flex-start;
       }
+
+      .stats,
+      .game-stats {
+        gap: 10px;
+      }
+
+      .stat-box,
+      .stat-card {
+        min-width: 110px;
+      }
+
     }
 
   </style>
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
 </head>
+
 
 <body>
 
 <header>
-  <h1>人物でそろえる神経衰弱</h1>
-  <p>画像が違っても同じ人物ならペア！</p>
+
+  <h1>
+    人物でそろえる神経衰弱
+  </h1>
+
+  <p>
+    画像が違っても同じ人物ならペア！
+  </p>
+
 </header>
+
+
+<!-- 統計 -->
+
 <div class="stats">
-  <div class="stat-box">
-    <span id="personCount">0</span>
-    <small>人物数</small>
-  </div>
 
   <div class="stat-box">
-    <span id="imageCount">0</span>
-    <small>画像数</small>
+
+    <span id="personCount">
+      0
+    </span>
+
+    <small>
+      人物数
+    </small>
+
   </div>
+
+
+  <div class="stat-box">
+
+    <span id="imageCount">
+      0
+    </span>
+
+    <small>
+      画像数
+    </small>
+
+  </div>
+
 </div>
 
 
 <div class="container">
 
-  <!-- 作成画面 -->
 
-<div id="editor" class="panel">
-  
-<h2>人物を追加</h2>
+  <!-- 編集画面 -->
 
-<input
-  type="text"
-  id="personName"
-  placeholder="人物名を入力"
->
+  <div
+    id="editor"
+    class="panel"
+  >
 
-<button onclick="addPerson()">
-  人物を追加
-</button>
+    <h2>
+      人物を追加
+    </h2>
 
-<div id="personList"></div>
+
+    <input
+      type="text"
+      id="personName"
+      placeholder="人物名を入力"
+    >
+
+
+    <button onclick="addPerson()">
+
+      人物を追加
+
+    </button>
+
+
+    <div id="personList"></div>
+
 
     <br>
 
+
     <button onclick="startGame()">
-      ゲーム開始
+
+      🎮 ゲーム開始
+
     </button>
 
   </div>
+
 
 
   <!-- ゲーム画面 -->
 
-  <div id="game" class="panel">
+  <div
+    id="game"
+    class="panel"
+    style="display:none"
+  >
 
     <button onclick="backToEditor()">
-      編集画面に戻る
+
+      ← 編集画面に戻る
+
     </button>
 
-    <h2>神経衰弱</h2>
+
+    <h2>
+      神経衰弱
+    </h2>
+
 
     <div class="game-stats">
 
-  <div class="stat-card">
+      <div class="stat-card">
 
-    <span id="remainingDisplay">
-      0
-    </span>
+        <span id="remainingDisplay">
+          0
+        </span>
 
-    <small>残り組数</small>
+        <small>
+          残り組数
+        </small>
 
-  </div>
-
-  <div class="stat-card">
-
-    <span id="movesDisplay">
-      0
-    </span>
-
-    <small>挑戦回数</small>
-
-  </div>
-
-</div>
+      </div>
 
 
-    <div id="board" class="card-board"></div>
+      <div class="stat-card">
+
+        <span id="movesDisplay">
+          0
+        </span>
+
+        <small>
+          挑戦回数
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="board"
+      class="card-board"
+    ></div>
+
 
     <div id="message"></div>
 
   </div>
-  
+
+
 </div>
 
 <script>
 
+/* =========================
+   Supabase設定
+========================= */
+
 const SUPABASE_URL =
-"https://zuwhkhsviqfitfzpgcdy.supabase.co/";
+  "https://zuwhkhsviqfitfzpgcdy.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_E09QP-l02lAr14I3p04wHg_2-1nE1TM";
+  "sb_publishable_E09QP-l02lAr14I3p04wHg_2-1nE1TM";
+
 
 const supabase =
-window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =========================
+   データ
+========================= */
+
+let people = [];
+
+let selectedCards = [];
+
+let lock = false;
+
+let remainingPairs = 0;
+
+let moves = 0;
+
+
+/* =========================
+   画像圧縮
+========================= */
 
 async function compressImage(file) {
 
   return new Promise((resolve) => {
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
-    reader.onload = function (event) {
+    reader.onload =
+      function(event) {
 
-      const img = new Image();
+        const img =
+          new Image();
 
-      img.onload = function () {
+        img.onload =
+          function() {
 
-        const canvas =
-          document.createElement("canvas");
+            const canvas =
+              document.createElement("canvas");
 
-        const maxWidth = 800;
+            const maxWidth = 800;
 
-        let width = img.width;
-        let height = img.height;
+            let width =
+              img.width;
 
-        if (width > maxWidth) {
+            let height =
+              img.height;
 
-          height =
-            height *
-            maxWidth /
-            width;
 
-          width =
-            maxWidth;
+            if (
+              width > maxWidth
+            ) {
 
-        }
+              height =
+                height *
+                maxWidth /
+                width;
 
-        canvas.width = width;
-        canvas.height = height;
+              width =
+                maxWidth;
 
-        const ctx =
-          canvas.getContext("2d");
+            }
 
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          width,
-          height
-        );
 
-        const compressed =
-          canvas.toDataURL(
-            "image/jpeg",
-            0.7
-          );
+            canvas.width =
+              width;
 
-        resolve(compressed);
+            canvas.height =
+              height;
+
+
+            const ctx =
+              canvas.getContext("2d");
+
+
+            ctx.drawImage(
+              img,
+              0,
+              0,
+              width,
+              height
+            );
+
+
+            canvas.toBlob(
+              function(blob) {
+
+                resolve(blob);
+
+              },
+              "image/jpeg",
+              0.7
+            );
+
+          };
+
+
+        img.src =
+          event.target.result;
 
       };
 
-      img.src = event.target.result;
-
-    };
 
     reader.readAsDataURL(file);
 
@@ -374,65 +829,201 @@ async function compressImage(file) {
 }
 
 
+/* =========================
+   人物・画像数更新
+========================= */
 
-let people = [];
+function updateCounts() {
 
-/*
-people のデータ例
+  const personCount =
+    people.length;
 
-[
-  {
-    name: "初音ミク",
-    images: [
-      "画像データ",
-      "画像データ"
-    ]
-  }
-]
 
-*/
+  const imageCount =
+    people.reduce(
+      (
+        total,
+        person
+      ) => {
 
+        return (
+          total +
+          person.images.length
+        );
+
+      },
+      0
+    );
+
+
+  document
+    .getElementById(
+      "personCount"
+    )
+    .textContent =
+    personCount;
+
+
+  document
+    .getElementById(
+      "imageCount"
+    )
+    .textContent =
+    imageCount;
+
+}
+
+
+/* =========================
+   人物読み込み
+========================= */
 
 async function loadPeople() {
 
-  const { data, error } =
+  const {
+    data: peopleData,
+    error: peopleError
+  } =
     await supabase
       .from("people")
-      .select("*");
+      .select("*")
+      .order(
+        "id",
+        {
+          ascending: true
+        }
+      );
 
-  if (error) {
 
-    console.error(error);
+  if (peopleError) {
+
+    console.error(
+      peopleError
+    );
+
+    alert(
+      "人物データの読み込みに失敗しました"
+    );
 
     return;
 
   }
 
-  people = data.map(person => ({
-    ...person,
-    images: []
-  }));
+
+  /* 画像も取得 */
+
+  const {
+    data: imageData,
+    error: imageError
+  } =
+    await supabase
+      .from("person_images")
+      .select("*");
+
+
+  if (imageError) {
+
+    console.error(
+      imageError
+    );
+
+    alert(
+      "画像データの読み込みに失敗しました"
+    );
+
+    return;
+
+  }
+
+
+  people =
+    peopleData.map(
+      person => {
+
+        const images =
+          imageData
+            .filter(
+              image =>
+                image.person_id ===
+                person.id
+            )
+            .map(
+              image => {
+
+                const {
+                  data
+                } =
+                  supabase
+                    .storage
+                    .from("images")
+                    .getPublicUrl(
+                      image.image_path
+                    );
+
+
+                return {
+
+                  id:
+                    image.id,
+
+                  path:
+                    image.image_path,
+
+                  url:
+                    data.publicUrl
+
+                };
+
+              }
+            );
+
+
+        return {
+
+          ...person,
+
+          images:
+            images
+
+        };
+
+      }
+    );
+
 
   renderPeople();
 
 }
 
 
+/* =========================
+   人物追加
+========================= */
+
 async function addPerson() {
 
   const nameInput =
-    document.getElementById("personName");
+    document.getElementById(
+      "personName"
+    );
+
 
   const name =
     nameInput.value.trim();
 
-  if (name === "") {
 
-    alert("人物名を入力してください");
+  if (
+    name === ""
+  ) {
+
+    alert(
+      "人物名を入力してください"
+    );
 
     return;
 
   }
+
 
   const { error } =
     await supabase
@@ -441,267 +1032,550 @@ async function addPerson() {
         name: name
       });
 
+
   if (error) {
 
-    alert(error.message);
+    alert(
+      error.message
+    );
 
     return;
 
   }
 
-  nameInput.value = "";
+
+  nameInput.value =
+    "";
+
 
   await loadPeople();
 
 }
 
 
+/* =========================
+   人物削除
+========================= */
 
+async function deletePerson(
+  person
+) {
 
-
-
-
-
-/* 人物一覧を表示 */
-
-function renderPeople() {
-
-  const list =
-    document.getElementById("personList");
-
-
-  list.innerHTML = "";
-
-
-  people.forEach((person, personIndex) => {
-
-    const personDiv =
-      document.createElement("div");
-
-
-    personDiv.className =
-      "person";
-
-
-    /* 人物名 */
-
-    const header =
-      document.createElement("div");
-
-
-    header.className =
-      "person-header";
-
-
-    const title =
-      document.createElement("h3");
-
-
-    title.textContent =
-      person.name +
-      "（画像 " +
-      person.images.length +
-      "枚）";
-
-
-    header.appendChild(title);
-
-
-    /* 人物削除 */
-
-    const deletePersonButton =
-      document.createElement("button");
-
-
-    deletePersonButton.textContent =
-      "人物を削除";
-
-
-    deletePersonButton.onclick =
-      function () {
-
-        people.splice(
-  personIndex,
-  1
-);
-
-
-
-renderPeople();
-
-
-      };
-
-
-    header.appendChild(
-      deletePersonButton
+  const ok =
+    confirm(
+      `「${person.name}」と画像を削除しますか？`
     );
 
 
-    personDiv.appendChild(
-      header
+  if (!ok) return;
+
+
+  /* Storageの画像を削除 */
+
+  const imagePaths =
+    person.images.map(
+      image =>
+        image.path
     );
 
 
-    /* 画像追加 */
+  if (
+    imagePaths.length > 0
+  ) {
 
-    const fileInput =
-      document.createElement("input");
-
-
-    fileInput.type =
-      "file";
-
-
-    fileInput.accept =
-      "image/*";
-
-
-    fileInput.multiple =
-      true;
-
-
-    fileInput.onchange =
-      function (event) {
-
-        const files =
-          event.target.files;
-
-
-        for (
-          let i = 0;
-          i < files.length;
-          i++
-        ) {
-
-          const reader =
-            new FileReader();
-
-
-          reader.onload =
-            function (e) {
-
-             (async () => {
-
-  const compressed =
-    await compressImage(
-      files[i]
-    );
-
-  person.images.push(
-    compressed
-  );
-
-
-  renderPeople();
-
-})();
-
-
-        }
-
-      };
-
-
-    personDiv.appendChild(
-      fileInput
-    );
-
-
-    /* 画像一覧 */
-
-    const imageList =
-      document.createElement("div");
-
-
-    imageList.className =
-      "image-list";
-
-
-    person.images.forEach(
-      (
-        image,
-        imageIndex
-      ) => {
-
-        const imageBox =
-          document.createElement("div");
-
-
-        imageBox.className =
-          "image-box";
-
-
-        const img =
-          document.createElement("img");
-
-
-        img.src =
-          image;
-
-
-        imageBox.appendChild(
-          img
+    const {
+      error: storageError
+    } =
+      await supabase
+        .storage
+        .from("images")
+        .remove(
+          imagePaths
         );
 
 
-        /* 画像削除 */
+    if (storageError) {
 
-        const deleteButton =
-          document.createElement("button");
+      console.error(
+        storageError
+      );
 
+    }
 
-        deleteButton.textContent =
-          "×";
-
-
-        deleteButton.className =
-          "delete-image";
+  }
 
 
-        deleteButton.onclick =
-          function () {
+  /* Databaseから人物削除 */
 
-            person.images.splice(
-              imageIndex,
-              1
-            );
-
-
-            renderPeople();
-
-          };
+  const { error } =
+    await supabase
+      .from("people")
+      .delete()
+      .eq(
+        "id",
+        person.id
+      );
 
 
-        imageBox.appendChild(
-          deleteButton
-        );
+  if (error) {
 
-
-        imageList.appendChild(
-          imageBox
-        );
-
-      }
+    alert(
+      error.message
     );
 
+    return;
 
-    personDiv.appendChild(
-      imageList
-    );
+  }
 
 
-    list.appendChild(
-      personDiv
-    );
-
-  });
+  await loadPeople();
 
 }
 
 
+/* =========================
+   画像アップロード
+========================= */
 
-/* 配列をランダムに並び替える */
+async function uploadImages(
+  person,
+  files
+) {
+
+  for (
+    const file
+    of files
+  ) {
+
+    try {
+
+      /*
+      画像圧縮
+      */
+
+      const compressedBlob =
+        await compressImage(
+          file
+        );
+
+
+      /*
+      ファイル名作成
+      */
+
+      const fileName =
+        `${person.id}/${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2)}.jpg`;
+
+
+      /*
+      Storageに保存
+      */
+
+      const {
+        error: uploadError
+      } =
+        await supabase
+          .storage
+          .from("images")
+          .upload(
+            fileName,
+            compressedBlob,
+            {
+              contentType:
+                "image/jpeg"
+            }
+          );
+
+
+      if (uploadError) {
+
+        console.error(
+          uploadError
+        );
+
+        alert(
+          "画像のアップロードに失敗しました"
+        );
+
+        continue;
+
+      }
+
+
+      /*
+      Databaseに画像情報を保存
+      */
+
+      const {
+        error: dbError
+      } =
+        await supabase
+          .from("person_images")
+          .insert({
+
+            person_id:
+              person.id,
+
+            image_path:
+              fileName
+
+          });
+
+
+      if (dbError) {
+
+        console.error(
+          dbError
+        );
+
+        alert(
+          "画像情報の保存に失敗しました"
+        );
+
+      }
+
+    }
+
+    catch (
+      error
+    ) {
+
+      console.error(
+        error
+      );
+
+      alert(
+        "画像処理中にエラーが発生しました"
+      );
+
+    }
+
+  }
+
+
+  await loadPeople();
+
+}
+
+
+/* =========================
+   画像削除
+========================= */
+
+async function deleteImage(
+  image
+) {
+
+  const ok =
+    confirm(
+      "この画像を削除しますか？"
+    );
+
+
+  if (!ok) return;
+
+
+  /*
+  Storageから削除
+  */
+
+  const {
+    error: storageError
+  } =
+    await supabase
+      .storage
+      .from("images")
+      .remove([
+        image.path
+      ]);
+
+
+  if (storageError) {
+
+    alert(
+      "Storageから画像を削除できませんでした"
+    );
+
+    return;
+
+  }
+
+
+  /*
+  Databaseから削除
+  */
+
+  const {
+    error: dbError
+  } =
+    await supabase
+      .from("person_images")
+      .delete()
+      .eq(
+        "id",
+        image.id
+      );
+
+
+  if (dbError) {
+
+    alert(
+      "画像情報を削除できませんでした"
+    );
+
+    return;
+
+  }
+
+
+  await loadPeople();
+
+}
+
+
+/* =========================
+   人物一覧表示
+========================= */
+
+function renderPeople() {
+
+  const list =
+    document.getElementById(
+      "personList"
+    );
+
+
+  list.innerHTML =
+    "";
+
+
+  people.forEach(
+    person => {
+
+
+      const personDiv =
+        document.createElement(
+          "div"
+        );
+
+
+      personDiv.className =
+        "person";
+
+
+      /* ヘッダー */
+
+      const header =
+        document.createElement(
+          "div"
+        );
+
+
+      header.className =
+        "person-header";
+
+
+      const title =
+        document.createElement(
+          "h3"
+        );
+
+
+      title.textContent =
+        `${person.name}（画像 ${person.images.length}枚）`;
+
+
+      header.appendChild(
+        title
+      );
+
+
+      /* 人物削除 */
+
+      const deletePersonButton =
+        document.createElement(
+          "button"
+        );
+
+
+      deletePersonButton.textContent =
+        "人物を削除";
+
+
+      deletePersonButton.onclick =
+        function() {
+
+          deletePerson(
+            person
+          );
+
+        };
+
+
+      header.appendChild(
+        deletePersonButton
+      );
+
+
+      personDiv.appendChild(
+        header
+      );
+
+
+      /* 画像追加 */
+
+      const fileInput =
+        document.createElement(
+          "input"
+        );
+
+
+      fileInput.type =
+        "file";
+
+
+      fileInput.accept =
+        "image/*";
+
+
+      fileInput.multiple =
+        true;
+
+
+      fileInput.onchange =
+        async function(event) {
+
+          const files =
+            Array.from(
+              event.target.files
+            );
+
+
+          if (
+            files.length === 0
+          ) return;
+
+
+          fileInput.disabled =
+            true;
+
+
+          await uploadImages(
+            person,
+            files
+          );
+
+        };
+
+
+      personDiv.appendChild(
+        fileInput
+      );
+
+
+      /* 画像一覧 */
+
+      const imageList =
+        document.createElement(
+          "div"
+        );
+
+
+      imageList.className =
+        "image-list";
+
+
+      person.images.forEach(
+        image => {
+
+
+          const imageBox =
+            document.createElement(
+              "div"
+            );
+
+
+          imageBox.className =
+            "image-box";
+
+
+          const img =
+            document.createElement(
+              "img"
+            );
+
+
+          img.src =
+            image.url;
+
+
+          imageBox.appendChild(
+            img
+          );
+
+
+          /* 画像削除 */
+
+          const deleteButton =
+            document.createElement(
+              "button"
+            );
+
+
+          deleteButton.textContent =
+            "×";
+
+
+          deleteButton.className =
+            "delete-image";
+
+
+          deleteButton.onclick =
+            function() {
+
+              deleteImage(
+                image
+              );
+
+            };
+
+
+          imageBox.appendChild(
+            deleteButton
+          );
+
+
+          imageList.appendChild(
+            imageBox
+          );
+
+        }
+      );
+
+
+      personDiv.appendChild(
+        imageList
+      );
+
+
+      list.appendChild(
+        personDiv
+      );
+
+    }
+  );
+
+
+  updateCounts();
+
+}
+
+
+/* =========================
+   シャッフル
+========================= */
 
 function shuffle(array) {
 
@@ -739,29 +1613,11 @@ function shuffle(array) {
 }
 
 
-
-let selectedCards =
-  [];
-
-
-let lock =
-  false;
-
-
-let remainingPairs =
-  0;
-
-
-let moves =
-  0;
-
-
+/* =========================
+   ゲーム開始
+========================= */
 
 function startGame() {
-
-  /*
-  画像が2枚以上ある人物だけ使う
-  */
 
   const usablePeople =
     people.filter(
@@ -778,7 +1634,6 @@ function startGame() {
       "最低1人、画像を2枚以上追加してください"
     );
 
-
     return;
 
   }
@@ -790,10 +1645,6 @@ function startGame() {
   usablePeople.forEach(
     person => {
 
-      /*
-      何枚画像を追加していても
-      ランダムに2枚選ぶ
-      */
 
       const shuffledImages =
         shuffle(
@@ -817,7 +1668,7 @@ function startGame() {
               person.name,
 
             image:
-              image
+              image.url
 
           });
 
@@ -833,15 +1684,27 @@ function startGame() {
 
 
   document
-    .getElementById("editor")
+    .getElementById(
+      "editor"
+    )
     .style.display =
-      "none";
+    "none";
 
 
   document
-    .getElementById("game")
+    .getElementById(
+      "game"
+    )
     .style.display =
-      "block";
+    "block";
+
+
+  document
+    .getElementById(
+      "message"
+    )
+    .innerHTML =
+    "";
 
 
   const board =
@@ -874,10 +1737,8 @@ function startGame() {
 
 
   cards.forEach(
-    (
-      card,
-      index
-    ) => {
+    card => {
+
 
       const cardElement =
         document.createElement(
@@ -891,10 +1752,6 @@ function startGame() {
 
       cardElement.dataset.person =
         card.person;
-
-
-      cardElement.dataset.index =
-        index;
 
 
       const img =
@@ -917,7 +1774,7 @@ function startGame() {
 
 
       cardElement.onclick =
-        function () {
+        function() {
 
           flipCard(
             cardElement
@@ -936,6 +1793,9 @@ function startGame() {
 }
 
 
+/* =========================
+   ステータス更新
+========================= */
 
 function updateStatus() {
 
@@ -944,33 +1804,32 @@ function updateStatus() {
       "remainingDisplay"
     )
     .textContent =
-      remainingPairs;
+    remainingPairs;
+
 
   document
     .getElementById(
       "movesDisplay"
     )
     .textContent =
-      moves;
+    moves;
 
 }
 
 
-
+/* =========================
+   カードをめくる
+========================= */
 
 function flipCard(card) {
 
-  if (
-    lock
-  ) return;
-
+  if (lock) return;
 
   if (
     card.classList.contains(
       "completed"
     )
   ) return;
-
 
   if (
     selectedCards.includes(
@@ -980,16 +1839,19 @@ function flipCard(card) {
 
 
   const img =
-    card.querySelector("img");
+    card.querySelector(
+      "img"
+    );
 
 
   img.classList.remove(
     "hidden-image"
   );
-  card.classList.add(
-  "revealed"
-);
 
+
+  card.classList.add(
+    "revealed"
+  );
 
 
   selectedCards.push(
@@ -1003,17 +1865,13 @@ function flipCard(card) {
 
     moves++;
 
-
     updateStatus();
 
-
-    lock =
-      true;
-
+    lock = true;
 
     setTimeout(
       checkPair,
-      700
+      800
     );
 
   }
@@ -1021,12 +1879,14 @@ function flipCard(card) {
 }
 
 
+/* =========================
+   ペア判定
+========================= */
 
 function checkPair() {
 
   const card1 =
     selectedCards[0];
-
 
   const card2 =
     selectedCards[1];
@@ -1035,14 +1895,9 @@ function checkPair() {
   const person1 =
     card1.dataset.person;
 
-
   const person2 =
     card2.dataset.person;
 
-
-  /*
-  同じ人物なら成功
-  */
 
   if (
     person1 === person2
@@ -1052,123 +1907,128 @@ function checkPair() {
       "completed"
     );
 
-
     card2.classList.add(
       "completed"
     );
 
-
     remainingPairs--;
-
 
     updateStatus();
 
 
     if (
-  remainingPairs === 0
-) {
+      remainingPairs === 0
+    ) {
 
-  document
-    .getElementById("message")
-    .innerHTML =
-  `
-    <div class="clear-box">
+      document
+        .getElementById(
+          "message"
+        )
+        .innerHTML =
+        `
+        <div class="clear-box">
 
-      <h2>
-        🎉 GAME CLEAR
-      </h2>
+          <h2>
+            🎉 GAME CLEAR！
+          </h2>
 
-      <p>
-        ${moves}手でクリア
-      </p>
+          <p>
+            ${moves}回でクリアしました！
+          </p>
 
-      <button
-        onclick="startGame()"
-      >
-        もう一度
-      </button>
+          <button
+            onclick="startGame()"
+          >
+            もう一度遊ぶ
+          </button>
 
-      <button
-        onclick="backToEditor()"
-      >
-        編集画面へ
-      </button>
+          <button
+            onclick="backToEditor()"
+          >
+            編集画面へ
+          </button>
 
-    </div>
-  `;
+        </div>
+        `;
 
-}
-
+    }
 
   }
 
   else {
 
     card1
-  .querySelector("img")
-  .classList.add(
-    "hidden-image"
-  );
+      .querySelector("img")
+      .classList.add(
+        "hidden-image"
+      );
 
-card2
-  .querySelector("img")
-  .classList.add(
-    "hidden-image"
-  );
+    card2
+      .querySelector("img")
+      .classList.add(
+        "hidden-image"
+      );
 
-card1.classList.remove(
-  "revealed"
-);
 
-card2.classList.remove(
-  "revealed"
-);
+    card1.classList.remove(
+      "revealed"
+    );
 
+    card2.classList.remove(
+      "revealed"
+    );
 
   }
 
 
-  selectedCards =
-    [];
+  selectedCards = [];
 
-
-  lock =
-    false;
+  lock = false;
 
 }
 
 
-
-/* 編集画面に戻る */
+/* =========================
+   編集画面へ
+========================= */
 
 function backToEditor() {
 
   document
-    .getElementById("game")
+    .getElementById(
+      "game"
+    )
     .style.display =
-      "none";
+    "none";
 
 
   document
-    .getElementById("editor")
+    .getElementById(
+      "editor"
+    )
     .style.display =
-      "block";
+    "block";
 
 
   document
-    .getElementById("message")
-    .textContent =
-      "";
+    .getElementById(
+      "message"
+    )
+    .innerHTML =
+    "";
 
 }
-alert("JavaScript OK");
 
+
+/* =========================
+   初期化
+========================= */
 
 loadPeople();
 
-
-
 </script>
+
+
 
 </body>
 </html>
