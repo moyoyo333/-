@@ -748,7 +748,7 @@ const SUPABASE_KEY =
   "sb_publishable_E09QP-l02lAr14I3p04wHg_2-1nE1TM";
 
 
-const supabase =
+const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
@@ -918,7 +918,7 @@ async function loadPeople() {
     data: peopleData,
     error: peopleError
   } =
-    await supabase
+    await supabaseClient
       .from("people")
       .select("*")
       .order(
@@ -950,7 +950,7 @@ async function loadPeople() {
     data: imageData,
     error: imageError
   } =
-    await supabase
+    await supabaseClient
       .from("person_images")
       .select("*");
 
@@ -987,7 +987,7 @@ async function loadPeople() {
                 const {
                   data
                 } =
-                  supabase
+                  supabaseClient
                     .storage
                     .from("images")
                     .getPublicUrl(
@@ -1060,7 +1060,7 @@ async function addPerson() {
 
 
   const { error } =
-    await supabase
+    await supabaseClient
       .from("people")
       .insert({
         name: name
@@ -1120,7 +1120,7 @@ async function deletePerson(
     const {
       error: storageError
     } =
-      await supabase
+      await supabaseClient
         .storage
         .from("images")
         .remove(
@@ -1142,7 +1142,7 @@ async function deletePerson(
   /* Databaseから人物削除 */
 
   const { error } =
-    await supabase
+    await supabaseClient
       .from("people")
       .delete()
       .eq(
@@ -1210,7 +1210,7 @@ async function uploadImages(
       const {
         error: uploadError
       } =
-        await supabase
+        await supabaseClient
           .storage
           .from("images")
           .upload(
@@ -1245,7 +1245,7 @@ async function uploadImages(
       const {
         error: dbError
       } =
-        await supabase
+        await supabaseClient
           .from("person_images")
           .insert({
 
@@ -1318,7 +1318,7 @@ async function deleteImage(
   const {
     error: storageError
   } =
-    await supabase
+    await supabaseClient
       .storage
       .from("images")
       .remove([
@@ -1344,7 +1344,7 @@ async function deleteImage(
   const {
     error: dbError
   } =
-    await supabase
+    await supabaseClient
       .from("person_images")
       .delete()
       .eq(
