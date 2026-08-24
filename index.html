@@ -2551,50 +2551,24 @@ function setupCropArea() {
       "cropArea"
     );
 
+  const naturalWidth =
+    cropState.sourceImage.naturalWidth;
 
-  const image =
-    document.getElementById(
-      "cropImage"
-    );
-
-
-  const square =
-    document.getElementById(
-      "cropSquare"
-    );
-
-
-  if (
-    !cropState.sourceImage
-  ) {
-
-    return;
-
-  }
-
+  const naturalHeight =
+    cropState.sourceImage.naturalHeight;
 
   const areaWidth =
     area.clientWidth;
-
 
   const areaHeight =
     area.clientHeight;
 
 
-  const naturalWidth =
-    cropState.sourceImage.naturalWidth;
-
-
-  const naturalHeight =
-    cropState.sourceImage.naturalHeight;
-
-
   /*
-    元画像を「できるだけ大きく」表示。
-    以前より元画像に近いサイズ。
+    画像を画面中央に表示
   */
 
-  const fitScale =
+  cropState.baseScale =
     Math.min(
       areaWidth / naturalWidth,
       areaHeight / naturalHeight
@@ -2602,91 +2576,85 @@ function setupCropArea() {
 
 
   /*
-    小さすぎる画像にならないようにする
+    初期ズーム
   */
 
-  const displayScale =
-    Math.max(
-      fitScale,
-      0.01
-    );
+  cropState.zoom = 1;
 
 
-  cropState.baseScale =
-    displayScale;
+  const imageWidth =
+    naturalWidth *
+    cropState.baseScale;
 
-
-  cropState.zoom =
-    0.8;
+  const imageHeight =
+    naturalHeight *
+    cropState.baseScale;
 
 
   cropState.originalDisplayWidth =
-    naturalWidth *
-    displayScale;
-
+    imageWidth;
 
   cropState.originalDisplayHeight =
-    naturalHeight *
-    displayScale;
-
-
-  cropState.imageLeft =
-    (
-      areaWidth -
-      cropState.originalDisplayWidth
-    ) / 2;
-
-
-  cropState.imageTop =
-    (
-      areaHeight -
-      cropState.originalDisplayHeight
-    ) / 2;
+    imageHeight;
 
 
   /*
-    正方形のサイズ
+    画像を完全に中央へ
   */
 
-  const squareSize =
+  cropState.imageLeft =
+    (areaWidth - imageWidth) / 2;
+
+  cropState.imageTop =
+    (areaHeight - imageHeight) / 2;
+
+
+  /*
+    白い枠
+
+    元画像の短い辺の90%
+  */
+
+  cropState.squareSize =
     Math.min(
-      cropState.originalDisplayWidth,
-      cropState.originalDisplayHeight
+      imageWidth,
+      imageHeight
     ) * 0.9;
 
 
-  cropState.squareSize =
-    squareSize;
-
+  /*
+    白い枠も中央
+  */
 
   cropState.squareLeft =
-    cropState.imageLeft +
-    (
-      cropState.originalDisplayWidth -
-      squareSize
-    ) / 2;
-
+    (areaWidth -
+      cropState.squareSize) / 2;
 
   cropState.squareTop =
-    cropState.imageTop +
-    (
-      cropState.originalDisplayHeight -
-      squareSize
-    ) / 2;
+    (areaHeight -
+      cropState.squareSize) / 2;
 
 
-  square.style.width =
-    squareSize + "px";
+  const zoomRange =
+    document.getElementById(
+      "zoomRange"
+    );
+
+  zoomRange.value =
+    cropState.zoom;
 
 
-  square.style.height =
-    squareSize + "px";
+  document
+    .getElementById(
+      "zoomText"
+    )
+    .textContent =
+    "100%";
 
 
   updateCropDisplay();
 
 }
-
 
 /* =========================================================
    切り抜き表示更新
@@ -2699,31 +2667,10 @@ function updateCropDisplay() {
       "cropImage"
     );
 
-
   const square =
     document.getElementById(
       "cropSquare"
     );
-
-
-  const scale =
-    cropState.baseScale *
-    cropState.zoom;
-
-
-  const width =
-    cropState.sourceImage.naturalWidth *
-    scale;
-
-
-  const height =
-    cropState.sourceImage.naturalHeight *
-    scale;
-
-
-  /*
-    ズーム時は中心を基準にする
-  */
 
   const area =
     document.getElementById(
@@ -2731,78 +2678,70 @@ function updateCropDisplay() {
     );
 
 
-  const centerX =
-    area.clientWidth / 2;
+  const areaWidth =
+    area.clientWidth;
+
+  const areaHeight =
+    area.clientHeight;
 
 
-  const centerY =
-    area.clientHeight / 2;
+  const imageWidth =
+    cropState.sourceImage.naturalWidth *
+    cropState.baseScale *
+    cropState.zoom;
 
 
-  /*
-    初期位置を中心基準で計算
-  */
-
-  const newLeft =
-    centerX -
-    width / 2;
-
-
-  const newTop =
-    centerY -
-    height / 2;
+  const imageHeight =
+    cropState.sourceImage.naturalHeight *
+    cropState.baseScale *
+    cropState.zoom;
 
 
   /*
-    ズーム時に切り抜き位置が
-    大きく飛ばないように補正
+    基本は画像を中央に配置
   */
 
-  if (
-    cropState.zoom === 1
-  ) {
+  cropState.imageLeft =
+    (areaWidth - imageWidth) / 2;
 
-    cropState.imageLeft =
-      newLeft;
-
-    cropState.imageTop =
-      newTop;
-
-  }
+  cropState.imageTop =
+    (areaHeight - imageHeight) / 2;
 
 
   image.style.width =
-    width + "px";
-
+    imageWidth + "px";
 
   image.style.height =
-    height + "px";
-
+    imageHeight + "px";
 
   image.style.left =
     cropState.imageLeft + "px";
-
 
   image.style.top =
     cropState.imageTop + "px";
 
 
+  square.style.width =
+    cropState.squareSize + "px";
+
+  square.style.height =
+    cropState.squareSize + "px";
+
   square.style.left =
     cropState.squareLeft + "px";
-
 
   square.style.top =
     cropState.squareTop + "px";
 
 
   /*
-    四角が画像外に出ないよう補正
+    白枠の中から
+    画像がはみ出ないように補正
   */
 
   constrainCropSquare();
 
 }
-
 
 /* =========================================================
    切り抜き四角の範囲補正
@@ -2816,44 +2755,50 @@ function constrainCropSquare() {
     );
 
 
-  const imageLeft =
-    cropState.imageLeft;
-
-
-  const imageTop =
-    cropState.imageTop;
+  const square =
+    document.getElementById(
+      "cropSquare"
+    );
 
 
   const imageWidth =
     image.offsetWidth;
 
-
   const imageHeight =
     image.offsetHeight;
 
 
-  const size =
+  /*
+    白枠より画像が小さくならないようにする
+  */
+
+  const requiredWidth =
+    cropState.squareSize;
+
+  const requiredHeight =
     cropState.squareSize;
 
 
+  /*
+    白枠の移動可能範囲
+  */
+
   const minLeft =
-    imageLeft;
+    cropState.imageLeft;
+
+  const maxLeft =
+    cropState.imageLeft +
+    imageWidth -
+    cropState.squareSize;
 
 
   const minTop =
-    imageTop;
-
-
-  const maxLeft =
-    imageLeft +
-    imageWidth -
-    size;
-
+    cropState.imageTop;
 
   const maxTop =
-    imageTop +
+    cropState.imageTop +
     imageHeight -
-    size;
+    cropState.squareSize;
 
 
   cropState.squareLeft =
@@ -2876,12 +2821,6 @@ function constrainCropSquare() {
     );
 
 
-  const square =
-    document.getElementById(
-      "cropSquare"
-    );
-
-
   square.style.left =
     cropState.squareLeft + "px";
 
@@ -2890,7 +2829,6 @@ function constrainCropSquare() {
     cropState.squareTop + "px";
 
 }
-
 
 /* =========================================================
    切り抜き四角ドラッグ
@@ -3008,7 +2946,6 @@ document
       const oldZoom =
         cropState.zoom;
 
-
       const newZoom =
         parseFloat(
           this.value
@@ -3016,38 +2953,23 @@ document
 
 
       /*
-        現在の四角の中心を維持
+        白枠の中心を基準に
+        拡大・縮小する
       */
 
       const squareCenterX =
         cropState.squareLeft +
         cropState.squareSize / 2;
 
-
       const squareCenterY =
         cropState.squareTop +
         cropState.squareSize / 2;
-
-
-      const area =
-        document.getElementById(
-          "cropArea"
-        );
-
-
-      const centerX =
-        area.clientWidth / 2;
-
-
-      const centerY =
-        area.clientHeight / 2;
 
 
       const oldImageWidth =
         cropState.sourceImage.naturalWidth *
         cropState.baseScale *
         oldZoom;
-
 
       const oldImageHeight =
         cropState.sourceImage.naturalHeight *
@@ -3056,68 +2978,51 @@ document
 
 
       /*
-        画像中心から四角中心までの距離
+        画像内での
+        白枠中心の相対位置
       */
 
       const relativeX =
-        squareCenterX -
-        centerX;
-
+        (squareCenterX -
+          cropState.imageLeft) /
+        oldImageWidth;
 
       const relativeY =
-        squareCenterY -
-        centerY;
-
-
-      /*
-        ズームによって画像位置を変更
-      */
-
-      const ratio =
-        newZoom /
-        oldZoom;
-
-
-      cropState.imageLeft =
-        centerX +
-        (
-          cropState.imageLeft -
-          centerX
-        ) * ratio;
-
-
-      cropState.imageTop =
-        centerY +
-        (
-          cropState.imageTop -
-          centerY
-        ) * ratio;
-
-
-      /*
-        四角位置も画像中心基準で維持
-      */
-
-      cropState.squareLeft =
-        centerX +
-        relativeX * ratio -
-        cropState.squareSize / 2;
-
-
-      cropState.squareTop =
-        centerY +
-        relativeY * ratio -
-        cropState.squareSize / 2;
+        (squareCenterY -
+          cropState.imageTop) /
+        oldImageHeight;
 
 
       cropState.zoom =
         newZoom;
 
 
+      const newImageWidth =
+        cropState.sourceImage.naturalWidth *
+        cropState.baseScale *
+        newZoom;
+
+      const newImageHeight =
+        cropState.sourceImage.naturalHeight *
+        cropState.baseScale *
+        newZoom;
+
+
       /*
-        実際の画像位置を維持するため、
-        updateCropDisplayではimageLeft/imageTopを使う。
+        白枠中心が同じ画像位置を
+        指し続けるようにする
       */
+
+      cropState.imageLeft =
+        squareCenterX -
+        relativeX *
+        newImageWidth;
+
+      cropState.imageTop =
+        squareCenterY -
+        relativeY *
+        newImageHeight;
+
 
       const image =
         document.getElementById(
@@ -3125,51 +3030,67 @@ document
         );
 
 
-      const width =
-        cropState.sourceImage.naturalWidth *
-        cropState.baseScale *
-        newZoom;
-
-
-      const height =
-        cropState.sourceImage.naturalHeight *
-        cropState.baseScale *
-        newZoom;
-
-
       image.style.width =
-        width + "px";
-
+        newImageWidth + "px";
 
       image.style.height =
-        height + "px";
-
+        newImageHeight + "px";
 
       image.style.left =
         cropState.imageLeft + "px";
-
 
       image.style.top =
         cropState.imageTop + "px";
 
 
-      document
-        .getElementById(
-          "cropSquare"
-        )
-        .style.left =
-        cropState.squareLeft + "px";
+      /*
+        白枠の中に
+        必ず画像が存在するよう補正
+      */
+
+      const minImageLeft =
+        cropState.squareLeft +
+        cropState.squareSize -
+        newImageWidth;
+
+      const maxImageLeft =
+        cropState.squareLeft;
 
 
-      document
-        .getElementById(
-          "cropSquare"
-        )
-        .style.top =
-        cropState.squareTop + "px";
+      const minImageTop =
+        cropState.squareTop +
+        cropState.squareSize -
+        newImageHeight;
+
+      const maxImageTop =
+        cropState.squareTop;
 
 
-      constrainCropSquare();
+      cropState.imageLeft =
+        Math.max(
+          minImageLeft,
+          Math.min(
+            maxImageLeft,
+            cropState.imageLeft
+          )
+        );
+
+
+      cropState.imageTop =
+        Math.max(
+          minImageTop,
+          Math.min(
+            maxImageTop,
+            cropState.imageTop
+          )
+        );
+
+
+      image.style.left =
+        cropState.imageLeft + "px";
+
+      image.style.top =
+        cropState.imageTop + "px";
 
 
       document
