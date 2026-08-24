@@ -702,20 +702,18 @@
 </div>
 
 
+
+
 <script>
+console.log("①開始");
 
-document.body.insertAdjacentHTML(
-  "beforeend",
-  "<h2 style='color:red'>① JavaScript開始</h2>"
-);
+function test() {
+  console.log("②関数OK");
+}
 
-alert("JavaScript起動！");
-
-document.body.insertAdjacentHTML(
-  "beforeend",
-  "<h2 style='color:blue'>② alert後</h2>"
-);
-
+console.log("③終了");
+</script>
+<script>
 /* =========================
    Supabase設定
 ========================= */
