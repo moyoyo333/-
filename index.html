@@ -360,40 +360,22 @@ input[type="file"] {
 ========================================================= */
 
 .image-list {
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 15px;
-
-  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .image-box {
-
   position: relative;
-
-  width: 130px;
+  width: 100%;
 }
 
 .image-box img {
-
-  width: 120px;
-
-  height: 120px;
-
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
   object-fit: cover;
-
-  border-radius: 14px;
-
-  display: block;
-
-  background: #eee;
-
-  box-shadow:
-    0 3px 10px
-    rgba(0,0,0,.15);
 }
 
 .image-buttons {
@@ -783,16 +765,7 @@ input[type="file"] {
     gap: 8px;
   }
 
-  .image-box {
-    width: 100px;
-    flex: 0 0 100px;
-  }
-
-  .image-box img {
-    width: 80px;
-    height: 80px;
-  }
-
+ 
   .crop-dialog {
     padding: 15px;
   }
@@ -830,18 +803,7 @@ input[type="file"] {
       repeat(2, 1fr);
   }
 
-  .image-box {
-
-    width: 90px;
-  }
-
-  .image-box img {
-
-    width: 90px;
-
-    height: 90px;
-  }
-
+  
 }
 
 </style>
@@ -1871,63 +1833,101 @@ imageToggle.addEventListener(
 );
      
 
+/* --------------------------------
+   画像一覧
+-------------------------------- */
 
-      /* --------------------------------
-         画像一覧
-      -------------------------------- */
-      const imageToggle =
+const imageToggle =
   document.createElement("button");
 
 imageToggle.type = "button";
-imageToggle.textContent = "画像一覧 ▼";
-
+imageToggle.textContent = "画像一覧 ▶";
 imageToggle.style.marginTop = "10px";
+
 
 const imageList =
   document.createElement("div");
 
 imageList.className = "image-list";
 
-      imageList.style.display = "none";
-imageToggle.textContent = "画像一覧 ▶";
-
-      person.images.forEach(
-        image => {
-
-          createSavedImageBox(
-            imageList,
-            person,
-            image
-          );
-
-        }
-      );
+/* 最初は閉じる */
+imageList.style.display = "none";
 
 
-      const pending =
-        pendingImages[
-          person.id
-        ] ||
-        [];
+/* 保存済み画像 */
+person.images.forEach(
+  image => {
+
+    createSavedImageBox(
+      imageList,
+      person,
+      image
+    );
+
+  }
+);
 
 
-      pending.forEach(
-        pendingImage => {
+/* 未切り抜き画像 */
+const pending =
+  pendingImages[
+    person.id
+  ] || [];
 
-          createPendingImageBox(
-            imageList,
-            person,
-            pendingImage
-          );
+pending.forEach(
+  pendingImage => {
 
-        }
-      );
+    createPendingImageBox(
+      imageList,
+      person,
+      pendingImage
+    );
+
+  }
+);
 
 
-      personDiv.appendChild(
-        imageList
-      );
+/* 人物カードに追加 */
+personDiv.appendChild(
+  imageToggle
+);
 
+personDiv.appendChild(
+  imageList
+);
+
+
+/* 開閉 */
+imageToggle.addEventListener(
+  "click",
+  function () {
+
+    const isOpen =
+      imageList.style.display !== "none";
+
+
+    if (isOpen) {
+
+      imageList.style.display =
+        "none";
+
+      imageToggle.textContent =
+        "画像一覧 ▶";
+
+    }
+
+    else {
+
+      imageList.style.display =
+        "grid";
+
+      imageToggle.textContent =
+        "画像一覧 ▼";
+
+    }
+
+  }
+);
 
       list.appendChild(
         personDiv
