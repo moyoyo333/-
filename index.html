@@ -1869,8 +1869,7 @@ imageToggle.addEventListener(
         : "画像一覧 ▼";
   }
 );
-      imageList.style.display = "none";
-imageToggle.textContent = "画像一覧 ▶";
+     
 
 
       /* --------------------------------
@@ -1889,6 +1888,8 @@ const imageList =
 
 imageList.className = "image-list";
 
+      imageList.style.display = "none";
+imageToggle.textContent = "画像一覧 ▶";
 
       person.images.forEach(
         image => {
