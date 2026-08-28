@@ -1811,27 +1811,7 @@ function renderPeople() {
         }
       );
 
-
-      personDiv.appendChild(imageToggle);
-personDiv.appendChild(imageList);
-
-imageToggle.addEventListener(
-  "click",
-  function () {
-
-    const isOpen =
-      imageList.style.display !== "none";
-
-    imageList.style.display =
-      isOpen ? "none" : "grid";
-
-    imageToggle.textContent =
-      isOpen
-        ? "画像一覧 ▶"
-        : "画像一覧 ▼";
-  }
-);
-     
+   
 
 /* --------------------------------
    画像一覧
