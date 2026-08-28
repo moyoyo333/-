@@ -1850,23 +1850,44 @@ function renderPeople() {
       );
 
 
-      personDiv.appendChild(
-        fileInput
-      );
+      personDiv.appendChild(imageToggle);
+personDiv.appendChild(imageList);
+
+imageToggle.addEventListener(
+  "click",
+  function () {
+
+    const isOpen =
+      imageList.style.display !== "none";
+
+    imageList.style.display =
+      isOpen ? "none" : "grid";
+
+    imageToggle.textContent =
+      isOpen
+        ? "画像一覧 ▶"
+        : "画像一覧 ▼";
+  }
+);
+      imageList.style.display = "none";
+imageToggle.textContent = "画像一覧 ▶";
 
 
       /* --------------------------------
          画像一覧
       -------------------------------- */
+      const imageToggle =
+  document.createElement("button");
 
-      const imageList =
-        document.createElement(
-          "div"
-        );
+imageToggle.type = "button";
+imageToggle.textContent = "画像一覧 ▼";
 
+imageToggle.style.marginTop = "10px";
 
-      imageList.className =
-        "image-list";
+const imageList =
+  document.createElement("div");
+
+imageList.className = "image-list";
 
 
       person.images.forEach(
