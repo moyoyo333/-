@@ -335,16 +335,22 @@ input[type="file"] {
 }
 
 .person-header {
-
   display: flex;
-
-  justify-content: space-between;
-
   align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
 
-  gap: 10px;
+.person-header h3 {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
 
-  flex-wrap: wrap;
+.person-header .delete-button {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .person-header h3 {
@@ -1758,63 +1764,44 @@ function renderPeople() {
       );
 
 
-      personDiv.appendChild(
-        header
-      );
-
-
-      /* --------------------------------
-         ファイル入力
-      -------------------------------- */
-
-      const fileInput =
-        document.createElement(
-          "input"
-        );
-
-
-      fileInput.type =
-        "file";
-
-      fileInput.accept =
-        "image/*";
-
-      fileInput.multiple =
-        true;
-
-
-      fileInput.addEventListener(
-        "change",
-        async function(event) {
-
-          const files =
-            Array.from(
-              event.target.files ||
-              []
-            );
-
-
-          if (!files.length) {
-            return;
-          }
-
-
-          await addPendingImages(
-            person,
-            files
-          );
-
-
-          event.target.value =
-            "";
-
-        }
-      );
-
-   
+     personDiv.appendChild(header);
 
 /* --------------------------------
-   画像一覧
+   ファイル入力
+-------------------------------- */
+
+const fileInput = document.createElement("input");
+
+fileInput.type = "file";
+fileInput.accept = "image/*";
+fileInput.multiple = true;
+
+fileInput.addEventListener(
+  "change",
+  async function(event) {
+
+    const files = Array.from(
+      event.target.files || []
+    );
+
+    if (!files.length) {
+      return;
+    }
+
+    await addPendingImages(
+      person,
+      files
+    );
+
+    event.target.value = "";
+  }
+);
+
+personDiv.appendChild(fileInput);
+
+
+/* --------------------------------
+   画像一覧 開閉ボタン
 -------------------------------- */
 
 const imageToggle =
@@ -1825,16 +1812,19 @@ imageToggle.textContent = "画像一覧 ▶";
 imageToggle.style.marginTop = "10px";
 
 
+/* --------------------------------
+   画像一覧
+-------------------------------- */
+
 const imageList =
   document.createElement("div");
 
 imageList.className = "image-list";
-
-/* 最初は閉じる */
 imageList.style.display = "none";
 
 
 /* 保存済み画像 */
+
 person.images.forEach(
   image => {
 
@@ -1849,6 +1839,7 @@ person.images.forEach(
 
 
 /* 未切り抜き画像 */
+
 const pending =
   pendingImages[
     person.id
@@ -1867,7 +1858,10 @@ pending.forEach(
 );
 
 
-/* 人物カードに追加 */
+/* --------------------------------
+   人物カードに追加
+-------------------------------- */
+
 personDiv.appendChild(
   imageToggle
 );
@@ -1877,30 +1871,26 @@ personDiv.appendChild(
 );
 
 
-/* 開閉 */
+/* --------------------------------
+   開閉
+-------------------------------- */
+
 imageToggle.addEventListener(
   "click",
-  function () {
+  function() {
 
     const isOpen =
       imageList.style.display !== "none";
 
-
     if (isOpen) {
 
-      imageList.style.display =
-        "none";
-
+      imageList.style.display = "none";
       imageToggle.textContent =
         "画像一覧 ▶";
 
-    }
+    } else {
 
-    else {
-
-      imageList.style.display =
-        "grid";
-
+      imageList.style.display = "grid";
       imageToggle.textContent =
         "画像一覧 ▼";
 
@@ -1908,7 +1898,6 @@ imageToggle.addEventListener(
 
   }
 );
-
       list.appendChild(
         personDiv
       );
