@@ -1215,6 +1215,8 @@ let people = [];
 
 let pendingImages = {};
 
+let imageListOpen = {};
+
 let selectedCards = [];
 
 let lock = false;
@@ -1802,7 +1804,15 @@ const imageToggle =
   document.createElement("button");
 
 imageToggle.type = "button";
-imageToggle.textContent = "画像一覧 ▶";
+
+const isImageListOpen =
+  imageListOpen[person.id] === true;
+
+imageToggle.textContent =
+  isImageListOpen
+    ? "画像一覧 ▼"
+    : "画像一覧 ▶";
+
 imageToggle.style.marginTop = "10px";
 
 
@@ -1814,7 +1824,11 @@ const imageList =
   document.createElement("div");
 
 imageList.className = "image-list";
-imageList.style.display = "none";
+
+imageList.style.display =
+  imageListOpen[person.id]
+    ? "grid"
+    : "none";
 
 
 /* 保存済み画像 */
@@ -1879,14 +1893,22 @@ imageToggle.addEventListener(
     if (isOpen) {
 
       imageList.style.display = "none";
+
       imageToggle.textContent =
         "画像一覧 ▶";
+
+      imageListOpen[person.id] =
+        false;
 
     } else {
 
       imageList.style.display = "grid";
+
       imageToggle.textContent =
         "画像一覧 ▼";
+
+      imageListOpen[person.id] =
+        true;
 
     }
 
